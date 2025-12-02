@@ -135,9 +135,9 @@ const Dialer: React.FC<DialerProps> = ({
         <div className="bg-black rounded-full px-5 py-2 flex items-center justify-center gap-3 transition-all duration-300 ease-in-out min-w-[100px] h-[30px]">
              {callState === CallState.ACTIVE && (
                  <div className="flex gap-1 items-end h-3">
-                     <div className="w-1 bg-green-500 animate-pulse h-3 rounded-full"></div>
-                     <div className="w-1 bg-green-500 animate-pulse h-2 rounded-full animation-delay-75"></div>
-                     <div className="w-1 bg-green-500 animate-pulse h-4 rounded-full animation-delay-150"></div>
+                     <div className="w-1 bg-slate-500 animate-pulse h-3 rounded-full"></div>
+                     <div className="w-1 bg-slate-500 animate-pulse h-2 rounded-full animation-delay-75"></div>
+                     <div className="w-1 bg-slate-500 animate-pulse h-4 rounded-full animation-delay-150"></div>
                  </div>
              )}
              {callState === CallState.RINGING && (
@@ -166,12 +166,12 @@ const Dialer: React.FC<DialerProps> = ({
                         }}
                         className={`w-full p-4 rounded-xl text-left border transition-all ${
                             selectedAgentId === agent.id 
-                            ? 'bg-emerald-50 border-emerald-500 shadow-sm' 
-                            : 'bg-white border-slate-200 hover:border-emerald-300'
+                            ? 'bg-slate-50 border-slate-500 shadow-sm' 
+                            : 'bg-white border-slate-200 hover:border-slate-300'
                         }`}
                       >
                           <div className="flex items-center gap-3">
-                              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${selectedAgentId === agent.id ? 'bg-emerald-200 text-emerald-800' : 'bg-slate-100 text-slate-500'}`}>
+                              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${selectedAgentId === agent.id ? 'bg-slate-200 text-slate-800' : 'bg-slate-100 text-slate-500'}`}>
                                   <Bot className="w-5 h-5"/>
                               </div>
                               <div>
@@ -202,7 +202,7 @@ const Dialer: React.FC<DialerProps> = ({
         {callState === CallState.IDLE && (
             <div className="w-full mb-4 relative z-20 space-y-2">
                 <div className="relative group">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-slate-500 transition-colors" />
                     <input 
                         type="text"
                         value={searchTerm}
@@ -211,7 +211,7 @@ const Dialer: React.FC<DialerProps> = ({
                             setShowSearch(!!e.target.value);
                         }}
                         placeholder="Search contacts..."
-                        className="w-full bg-slate-200/70 hover:bg-slate-200 focus:bg-white text-slate-900 text-sm rounded-xl pl-9 pr-8 py-2.5 outline-none transition-all border border-transparent focus:border-blue-500/30 focus:shadow-sm placeholder:text-slate-500"
+                        className="w-full bg-slate-200/70 hover:bg-slate-200 focus:bg-white text-slate-900 text-sm rounded-xl pl-9 pr-8 py-2.5 outline-none transition-all border border-transparent focus:border-slate-500/30 focus:shadow-sm placeholder:text-slate-500"
                     />
                     {searchTerm && (
                         <button 
@@ -226,15 +226,15 @@ const Dialer: React.FC<DialerProps> = ({
                 {/* Agent Selection Pill */}
                 <button 
                     onClick={() => setShowAgentSelector(true)}
-                    className="w-full flex items-center justify-between px-3 py-2 bg-white border border-slate-200 rounded-xl shadow-sm hover:border-emerald-300 transition-colors"
+                    className="w-full flex items-center justify-between px-3 py-2 bg-white border border-slate-200 rounded-xl shadow-sm hover:border-slate-300 transition-colors"
                 >
                     <div className="flex items-center gap-2">
-                        <div className="w-5 h-5 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600">
+                        <div className="w-5 h-5 bg-slate-100 rounded-full flex items-center justify-center text-slate-600">
                             <Bot className="w-3 h-3"/>
                         </div>
                         <span className="text-xs font-bold text-slate-700">Agent: {selectedAgent?.name}</span>
                     </div>
-                    <span className="text-xs text-emerald-600 font-bold">Change</span>
+                    <span className="text-xs text-slate-600 font-bold">Change</span>
                 </button>
 
                 {/* Search Results Overlay */}
@@ -248,23 +248,23 @@ const Dialer: React.FC<DialerProps> = ({
                                         key={lead.id}
                                         onClick={() => handleSearchSelect(lead)}
                                         className={`w-full px-4 py-3 flex items-center gap-3 transition-colors text-left ${
-                                            isSelected ? 'bg-indigo-50 border-l-4 border-indigo-500' : 'hover:bg-blue-50 border-l-4 border-transparent'
+                                            isSelected ? 'bg-slate-50 border-l-4 border-slate-500' : 'hover:bg-slate-50 border-l-4 border-transparent'
                                         }`}
                                     >
                                         <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
-                                            isSelected ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-200 text-slate-600'
+                                            isSelected ? 'bg-slate-100 text-slate-600' : 'bg-slate-200 text-slate-600'
                                         }`}>
                                             {lead.firstName[0]}{lead.lastName[0]}
                                         </div>
                                         <div className="flex-1">
-                                            <div className={`text-sm font-semibold ${isSelected ? 'text-indigo-900' : 'text-slate-900'}`}>
+                                            <div className={`text-sm font-semibold ${isSelected ? 'text-slate-900' : 'text-slate-900'}`}>
                                                 {lead.firstName} {lead.lastName}
                                             </div>
-                                            <div className={`text-xs ${isSelected ? 'text-indigo-600' : 'text-slate-500'}`}>
+                                            <div className={`text-xs ${isSelected ? 'text-slate-600' : 'text-slate-500'}`}>
                                                 {lead.phone}
                                             </div>
                                         </div>
-                                        {isSelected && <Check className="w-4 h-4 text-indigo-600" />}
+                                        {isSelected && <Check className="w-4 h-4 text-slate-600" />}
                                     </button>
                                 );
                             })
@@ -288,7 +288,7 @@ const Dialer: React.FC<DialerProps> = ({
                     placeholder=""
                 />
                  {activeLeadName && (
-                     <div className="text-emerald-600 font-medium text-sm bg-emerald-50 border border-emerald-100 px-3 py-1 rounded-full inline-block animate-in fade-in slide-in-from-bottom-2 shadow-sm">
+                     <div className="text-slate-600 font-medium text-sm bg-slate-50 border border-slate-100 px-3 py-1 rounded-full inline-block animate-in fade-in slide-in-from-bottom-2 shadow-sm">
                         {activeLeadName}
                      </div>
                  )}
@@ -299,7 +299,7 @@ const Dialer: React.FC<DialerProps> = ({
           ) : (
              <div className="text-center animate-in fade-in zoom-in duration-300">
                  <div className="relative w-28 h-28 mx-auto mb-6">
-                     <div className={`absolute inset-0 bg-emerald-200 rounded-full animate-ping opacity-20 ${callState === CallState.RINGING ? 'animation-duration-1000' : ''}`}></div>
+                     <div className={`absolute inset-0 bg-slate-200 rounded-full animate-ping opacity-20 ${callState === CallState.RINGING ? 'animation-duration-1000' : ''}`}></div>
                      <div className="w-full h-full bg-gradient-to-b from-slate-100 to-slate-200 rounded-full flex items-center justify-center shadow-xl border-4 border-white relative z-10">
                         <span className="text-4xl text-slate-700 font-bold">
                             {(activeLeadName || 'Laurent')[0]}
@@ -310,7 +310,7 @@ const Dialer: React.FC<DialerProps> = ({
                  <h2 className="text-3xl font-bold text-slate-900 mb-2 tracking-tight leading-tight px-4">{activeLeadName || 'Unknown'}</h2>
                  
                  {activeLeadName && (
-                    <div className="inline-block px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold uppercase tracking-wider rounded-full mb-4">
+                    <div className="inline-block px-3 py-1 bg-slate-100 text-slate-700 text-xs font-bold uppercase tracking-wider rounded-full mb-4">
                         CRM Lead
                     </div>
                  )}
@@ -341,7 +341,7 @@ const Dialer: React.FC<DialerProps> = ({
                  {[...Array(4)].map((_, i) => (
                     <div 
                         key={`out-${i}`}
-                        className="w-1.5 bg-blue-500 rounded-full transition-all duration-100"
+                        className="w-1.5 bg-slate-900 rounded-full transition-all duration-100"
                         style={{ height: `${Math.max(6, activeVisualizerHeight * (Math.random() + 0.3))}px` }}
                     />
                  ))}
@@ -388,7 +388,7 @@ const Dialer: React.FC<DialerProps> = ({
                         <button 
                             onClick={() => onCallStart(dialNumber)}
                             disabled={!dialNumber}
-                            className="w-[72px] h-[72px] bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-full flex items-center justify-center shadow-lg shadow-emerald-500/30 transition-all transform active:scale-95"
+                            className="w-[72px] h-[72px] bg-slate-500 hover:bg-slate-600 active:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-full flex items-center justify-center shadow-lg shadow-slate-500/30 transition-all transform active:scale-95"
                         >
                             <Phone className="w-8 h-8 text-white fill-current" />
                         </button>
