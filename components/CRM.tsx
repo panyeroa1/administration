@@ -81,10 +81,10 @@ const CRM: React.FC<CRMProps> = ({
 
   const getStatusIcon = (outcome: string) => {
       switch(outcome) {
-          case 'connected': return <PhoneIncoming className="w-4 h-4 text-emerald-500" />;
+          case 'connected': return <PhoneIncoming className="w-4 h-4 text-slate-500" />;
           case 'missed': return <PhoneMissed className="w-4 h-4 text-red-500" />;
           case 'voicemail': return <Voicemail className="w-4 h-4 text-amber-500" />;
-          case 'follow_up': return <CalendarDays className="w-4 h-4 text-indigo-500" />;
+          case 'follow_up': return <CalendarDays className="w-4 h-4 text-white 500" />;
           default: return <Phone className="w-4 h-4 text-slate-400" />;
       }
   };
@@ -93,7 +93,7 @@ const CRM: React.FC<CRMProps> = ({
     <button 
         onClick={() => setTab(id)}
         className={`w-full text-left px-3 py-2.5 rounded-lg flex items-center gap-3 text-sm font-medium transition-all duration-200 relative group overflow-hidden ${
-          tab === id ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-50'
+          tab === id ? 'bg-black 50 text-white 700' : 'text-slate-600 hover:bg-slate-50'
         } ${isSidebarCollapsed ? 'justify-center' : ''}`}
         title={isSidebarCollapsed ? label : undefined}
     >
@@ -102,7 +102,7 @@ const CRM: React.FC<CRMProps> = ({
           {label}
         </span>
         {badge && !isSidebarCollapsed && (
-          <span className="bg-indigo-100 text-indigo-600 text-[10px] font-bold py-0.5 px-2 rounded-full min-w-[20px] text-center">
+          <span className="bg-black 100 text-white 600 text-[10px] font-bold py-0.5 px-2 rounded-full min-w-[20px] text-center">
             {badge}
           </span>
         )}
@@ -122,16 +122,16 @@ const CRM: React.FC<CRMProps> = ({
           <h2 className="text-2xl font-bold text-slate-800 mb-6">Welcome back, {currentUser.name.split(' ')[0]}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
               {[
-                  { label: currentUser.role === 'BROKER' ? 'Revenue' : 'Balance', val: '€42.5k', change: '+12%', icon: DollarSign, color: 'bg-indigo-500' },
+                  { label: currentUser.role === 'BROKER' ? 'Revenue' : 'Balance', val: '€42.5k', change: '+12%', icon: DollarSign, color: 'bg-black 500' },
                   { label: 'Pending Tasks', val: pendingTasks, change: 'Keep it up', icon: CheckSquare, color: 'bg-amber-500' },
-                  { label: 'Messages', val: '12', change: 'New', icon: Mail, color: 'bg-blue-500' },
-                  { label: 'Rating', val: '4.9', change: '+0.1', icon: CheckCircle, color: 'bg-emerald-500' }
+                  { label: 'Messages', val: '12', change: 'New', icon: Mail, color: 'bg-slate-500' },
+                  { label: 'Rating', val: '4.9', change: '+0.1', icon: CheckCircle, color: 'bg-slate-500' }
               ].map((stat, i) => (
                   <div key={i} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-start justify-between hover:shadow-md transition-shadow">
                       <div>
                           <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">{stat.label}</p>
                           <h3 className="text-2xl font-bold text-slate-900">{stat.val}</h3>
-                          <span className={`text-xs font-medium ${stat.change.startsWith('+') ? 'text-emerald-600' : 'text-slate-500'} flex items-center mt-1`}>
+                          <span className={`text-xs font-medium ${stat.change.startsWith('+') ? 'text-slate-600' : 'text-slate-500'} flex items-center mt-1`}>
                               {stat.change} this month
                           </span>
                       </div>
@@ -209,7 +209,7 @@ const CRM: React.FC<CRMProps> = ({
           <div className="w-64 bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col overflow-hidden shrink-0">
               <div className="p-4 border-b border-slate-100 flex justify-between items-center">
                   <h3 className="font-bold text-slate-700">Agents</h3>
-                  <button onClick={handleCreateNew} className="p-1 hover:bg-slate-100 rounded-lg text-indigo-600">
+                  <button onClick={handleCreateNew} className="p-1 hover:bg-slate-100 rounded-lg text-white 600">
                       <Plus className="w-5 h-5"/>
                   </button>
               </div>
@@ -218,7 +218,7 @@ const CRM: React.FC<CRMProps> = ({
                       <div 
                         key={agent.id} 
                         onClick={() => handleSelectAgent(agent)}
-                        className={`p-3 border-b border-slate-50 cursor-pointer hover:bg-slate-50 transition-colors ${agentPersona.id === agent.id ? 'bg-indigo-50 border-l-4 border-l-indigo-500' : 'border-l-4 border-l-transparent'}`}
+                        className={`p-3 border-b border-slate-50 cursor-pointer hover:bg-slate-50 transition-colors ${agentPersona.id === agent.id ? 'bg-black 50 border-l-4 border-l-indigo-500' : 'border-l-4 border-l-transparent'}`}
                       >
                           <div className="font-bold text-sm text-slate-800">{agent.name}</div>
                           <div className="text-xs text-slate-500 truncate">{agent.role}</div>
@@ -263,7 +263,7 @@ const CRM: React.FC<CRMProps> = ({
                       <button 
                         onClick={handleSave}
                         disabled={isSaving}
-                        className="bg-emerald-600 text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-emerald-500/20 hover:bg-emerald-700 transition-all active:scale-95 flex items-center gap-2"
+                        className="bg-slate-600 text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-slate-500/20 hover:bg-slate-700 transition-all active:scale-95 flex items-center gap-2"
                       >
                           {isSaving ? <span className="animate-pulse">Saving...</span> : <><Save className="w-4 h-4"/> Save Agent</>}
                       </button>
@@ -280,7 +280,7 @@ const CRM: React.FC<CRMProps> = ({
                                     type="text" 
                                     value={editPersona.name}
                                     onChange={(e) => setEditPersona({...editPersona, name: e.target.value})}
-                                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all font-bold text-slate-900"
+                                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-slate-500 outline-none transition-all font-bold text-slate-900"
                                     placeholder="e.g. Laurent De Wilde"
                                 />
                           </div>
@@ -296,15 +296,15 @@ const CRM: React.FC<CRMProps> = ({
                                     onClick={() => setEditPersona({...editPersona, voiceId: voice.id})}
                                     className={`p-3 rounded-xl border cursor-pointer flex items-center gap-3 transition-all ${
                                         editPersona.voiceId === voice.id 
-                                        ? 'bg-emerald-50 border-emerald-500 shadow-sm' 
-                                        : 'bg-white border-slate-200 hover:border-emerald-300'
+                                        ? 'bg-slate-50 border-slate-500 shadow-sm' 
+                                        : 'bg-white border-slate-200 hover:border-slate-300'
                                     }`}
                                   >
-                                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${editPersona.voiceId === voice.id ? 'bg-emerald-200 text-emerald-800' : 'bg-slate-100 text-slate-500'}`}>
+                                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${editPersona.voiceId === voice.id ? 'bg-slate-200 text-slate-800' : 'bg-slate-100 text-slate-500'}`}>
                                           <Mic className="w-4 h-4"/>
                                       </div>
                                       <div>
-                                          <div className={`text-sm font-bold ${editPersona.voiceId === voice.id ? 'text-emerald-900' : 'text-slate-700'}`}>{voice.name}</div>
+                                          <div className={`text-sm font-bold ${editPersona.voiceId === voice.id ? 'text-slate-900' : 'text-slate-700'}`}>{voice.name}</div>
                                           <div className="text-xs text-slate-500">{voice.description}</div>
                                       </div>
                                   </div>
@@ -318,7 +318,7 @@ const CRM: React.FC<CRMProps> = ({
                           <textarea 
                             value={editPersona.firstSentence || ''}
                             onChange={(e) => setEditPersona({...editPersona, firstSentence: e.target.value})}
-                            className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all resize-none text-sm text-slate-700"
+                            className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-slate-500 outline-none transition-all resize-none text-sm text-slate-700"
                             rows={3}
                             placeholder="Hi, this is [Name] calling from [Company]..."
                           />
@@ -330,7 +330,7 @@ const CRM: React.FC<CRMProps> = ({
                           <textarea 
                             value={editPersona.systemPrompt || ''}
                             onChange={(e) => setEditPersona({...editPersona, systemPrompt: e.target.value})}
-                            className="w-full h-96 p-4 bg-slate-900 text-emerald-400 font-mono text-xs rounded-xl border border-slate-800 focus:border-emerald-500 outline-none resize-none leading-relaxed"
+                            className="w-full h-96 p-4 bg-slate-900 text-slate-400 font-mono text-xs rounded-xl border border-slate-800 focus:border-slate-500 outline-none resize-none leading-relaxed"
                             placeholder="You are an expert real estate broker..."
                           />
                       </div>
@@ -339,7 +339,7 @@ const CRM: React.FC<CRMProps> = ({
                       <div>
                           <button 
                             onClick={() => setShowAdvanced(!showAdvanced)}
-                            className="text-xs font-bold text-slate-400 hover:text-emerald-600 flex items-center gap-1"
+                            className="text-xs font-bold text-slate-400 hover:text-slate-600 flex items-center gap-1"
                           >
                               {showAdvanced ? <ChevronDown className="w-3 h-3"/> : <ChevronRight className="w-3 h-3"/>}
                               {showAdvanced ? 'Hide Advanced Settings' : 'Show Advanced Settings'}
@@ -381,17 +381,17 @@ const CRM: React.FC<CRMProps> = ({
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm flex-1 overflow-hidden flex">
               <div className="w-full md:w-1/3 border-r border-slate-100 flex flex-col">
                    <div className="p-4 border-b border-slate-100">
-                       <input type="text" placeholder="Search messages..." className="w-full px-4 py-2 bg-slate-50 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500/50"/>
+                       <input type="text" placeholder="Search messages..." className="w-full px-4 py-2 bg-slate-50 rounded-lg text-sm outline-none focus:ring-2 focus:ring-slate-900 500/50"/>
                    </div>
                    <div className="overflow-y-auto flex-1">
                        {MOCK_EMAILS.map(email => (
-                           <div key={email.id} className={`p-4 border-b border-slate-50 hover:bg-slate-50 cursor-pointer transition-colors ${!email.read ? 'bg-indigo-50/30' : ''}`}>
+                           <div key={email.id} className={`p-4 border-b border-slate-50 hover:bg-slate-50 cursor-pointer transition-colors ${!email.read ? 'bg-black 50/30' : ''}`}>
                                <div className="flex justify-between items-start mb-1">
                                    <div className="flex items-center gap-2">
                                         {email.source === 'WHATSAPP' ? (
-                                            <div className="w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center text-white"><MessageSquare className="w-3 h-3"/></div>
+                                            <div className="w-5 h-5 bg-slate-500 rounded-full flex items-center justify-center text-white"><MessageSquare className="w-3 h-3"/></div>
                                         ) : (
-                                            <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center text-white"><Mail className="w-3 h-3"/></div>
+                                            <div className="w-5 h-5 bg-slate-500 rounded-full flex items-center justify-center text-white"><Mail className="w-3 h-3"/></div>
                                         )}
                                         <span className={`text-sm font-bold ${!email.read ? 'text-slate-900' : 'text-slate-600'}`}>{email.from}</span>
                                    </div>
@@ -417,7 +417,7 @@ const CRM: React.FC<CRMProps> = ({
       <div className="animate-in fade-in duration-500">
            <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-slate-800">Marketing</h2>
-                <button className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium flex gap-2 items-center">
+                <button className="bg-black 600 text-white px-4 py-2 rounded-lg text-sm font-medium flex gap-2 items-center">
                     <Plus className="w-4 h-4" /> New Campaign
                 </button>
            </div>
@@ -426,7 +426,7 @@ const CRM: React.FC<CRMProps> = ({
                    <div key={camp.id} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
                        <div className="flex justify-between items-start mb-4">
                            <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${
-                               camp.status === 'Active' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'
+                               camp.status === 'Active' ? 'bg-slate-100 text-slate-700' : 'bg-slate-100 text-slate-600'
                            }`}>
                                {camp.status}
                            </span>
@@ -454,16 +454,16 @@ const CRM: React.FC<CRMProps> = ({
            <h2 className="text-2xl font-bold text-slate-800 mb-6">Analytics</h2>
            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm min-h-[300px] flex flex-col justify-center items-center text-center">
-                   <BarChart3 className="w-16 h-16 text-indigo-100 mb-4"/>
+                   <BarChart3 className="w-16 h-16 text-white 100 mb-4"/>
                    <h3 className="text-lg font-bold text-slate-700">Performance Metrics</h3>
                    <div className="flex gap-2 items-end h-32 mt-4">
                         {[40, 70, 45, 90, 65, 80, 50].map((h, i) => (
-                            <div key={i} style={{height: `${h}%`}} className="w-4 bg-emerald-500 rounded-t-sm"></div>
+                            <div key={i} style={{height: `${h}%`}} className="w-4 bg-slate-500 rounded-t-sm"></div>
                         ))}
                    </div>
                </div>
                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm min-h-[300px] flex flex-col justify-center items-center text-center">
-                   <Target className="w-16 h-16 text-indigo-100 mb-4"/>
+                   <Target className="w-16 h-16 text-white 100 mb-4"/>
                    <h3 className="text-lg font-bold text-slate-700">Conversion Goals</h3>
                     <div className="relative w-32 h-32 mt-4">
                         <svg className="w-full h-full" viewBox="0 0 36 36">
@@ -484,7 +484,7 @@ const CRM: React.FC<CRMProps> = ({
                 <h2 className="text-2xl font-bold text-slate-800">Maintenance Tickets</h2>
                 <p className="text-slate-500 text-sm">Track repairs and requests</p>
               </div>
-              <button className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 flex items-center gap-2">
+              <button className="bg-black 600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-black 700 flex items-center gap-2">
                   <Plus className="w-4 h-4"/> New Ticket
               </button>
           </div>
@@ -495,7 +495,7 @@ const CRM: React.FC<CRMProps> = ({
                     key={status}
                     onClick={() => setFilterTicketStatus(status)}
                     className={`px-4 py-2 rounded-full text-xs font-bold transition-colors ${
-                        filterTicketStatus === status ? 'bg-indigo-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+                        filterTicketStatus === status ? 'bg-black 600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
                     }`}
                   >
                       {status}
@@ -509,7 +509,7 @@ const CRM: React.FC<CRMProps> = ({
                       <div className="flex justify-between items-start mb-3">
                           <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${
                               ticket.priority === 'HIGH' ? 'bg-red-100 text-red-700' : 
-                              ticket.priority === 'MEDIUM' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'
+                              ticket.priority === 'MEDIUM' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-700'
                           }`}>
                               {ticket.priority} Priority
                           </span>
@@ -525,12 +525,12 @@ const CRM: React.FC<CRMProps> = ({
 
                       <div className="flex justify-between items-center pt-3 border-t border-slate-50">
                           <div className={`flex items-center gap-1.5 text-xs font-bold ${
-                              ticket.status === 'COMPLETED' ? 'text-emerald-600' : 'text-indigo-600'
+                              ticket.status === 'COMPLETED' ? 'text-slate-600' : 'text-white 600'
                           }`}>
                               {ticket.status === 'COMPLETED' ? <CheckCircle className="w-3.5 h-3.5"/> : <Clock className="w-3.5 h-3.5"/>}
                               {ticket.status}
                           </div>
-                          <button className="text-slate-400 hover:text-indigo-600 text-xs font-medium">Details &rarr;</button>
+                          <button className="text-slate-400 hover:text-white 600 text-xs font-medium">Details &rarr;</button>
                       </div>
                   </div>
               ))}
@@ -565,7 +565,7 @@ const CRM: React.FC<CRMProps> = ({
                                   <td className="px-4 py-3 font-bold text-slate-900">€{inv.amount}</td>
                                   <td className="px-4 py-3">
                                       <span className={`px-2 py-1 rounded-full text-xs font-bold ${
-                                          inv.status === 'PAID' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                                          inv.status === 'PAID' ? 'bg-slate-100 text-slate-700' : 'bg-amber-100 text-amber-700'
                                       }`}>
                                           {inv.status}
                                       </span>
@@ -609,11 +609,11 @@ const CRM: React.FC<CRMProps> = ({
                   const dateStr = new Date(year, month, day).toDateString();
                   const dayTasks = tasks.filter(t => !t.completed && new Date(t.dueDate).toDateString() === dateStr);
                   return (
-                      <div key={day} className={`bg-white p-2 min-h-[80px] hover:bg-slate-50 transition-colors relative flex flex-col gap-1 ${isToday(day) ? 'bg-indigo-50/30' : ''}`}>
-                          <span className={`text-sm font-medium w-6 h-6 flex items-center justify-center rounded-full ${isToday(day) ? 'bg-indigo-600 text-white' : 'text-slate-700'}`}>{day}</span>
+                      <div key={day} className={`bg-white p-2 min-h-[80px] hover:bg-slate-50 transition-colors relative flex flex-col gap-1 ${isToday(day) ? 'bg-black 50/30' : ''}`}>
+                          <span className={`text-sm font-medium w-6 h-6 flex items-center justify-center rounded-full ${isToday(day) ? 'bg-black 600 text-white' : 'text-slate-700'}`}>{day}</span>
                           <div className="flex flex-col gap-1 overflow-y-auto max-h-[60px] no-scrollbar">
                               {dayTasks.map(t => (
-                                  <div key={t.id} className="text-[10px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded truncate border border-indigo-200" title={t.title}>{t.title}</div>
+                                  <div key={t.id} className="text-[10px] bg-black 100 text-white 700 px-1.5 py-0.5 rounded truncate border border-black 200" title={t.title}>{t.title}</div>
                               ))}
                           </div>
                       </div>
@@ -631,7 +631,7 @@ const CRM: React.FC<CRMProps> = ({
                    <h2 className="text-2xl font-bold text-slate-800">Documents</h2>
                    <p className="text-slate-500 text-sm">Contracts, Invoices, and Reports</p>
               </div>
-              <button className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium flex gap-2 items-center hover:bg-indigo-700">
+              <button className="bg-black 600 text-white px-4 py-2 rounded-lg text-sm font-medium flex gap-2 items-center hover:bg-black 700">
                   <Plus className="w-4 h-4" /> Upload
               </button>
           </div>
@@ -654,8 +654,8 @@ const CRM: React.FC<CRMProps> = ({
                                       <div className="flex items-center gap-3">
                                           <div className={`p-2 rounded-lg ${
                                               doc.type === 'PDF' ? 'bg-red-50 text-red-600' : 
-                                              doc.type === 'XLS' ? 'bg-green-50 text-green-600' :
-                                              doc.type === 'IMG' ? 'bg-purple-50 text-purple-600' : 'bg-blue-50 text-blue-600'
+                                              doc.type === 'XLS' ? 'bg-slate-50 text-slate-600' :
+                                              doc.type === 'IMG' ? 'bg-slate-50 text-slate-600' : 'bg-slate-50 text-slate-600'
                                           }`}>
                                               <FileText className="w-5 h-5"/>
                                           </div>
@@ -668,7 +668,7 @@ const CRM: React.FC<CRMProps> = ({
                                   <td className="px-6 py-4 text-slate-500">{doc.date}</td>
                                   <td className="px-6 py-4 text-slate-500 font-mono text-xs">{doc.size}</td>
                                   <td className="px-6 py-4 text-right">
-                                      <button className="text-slate-400 hover:text-indigo-600 transition-colors">
+                                      <button className="text-slate-400 hover:text-white 600 transition-colors">
                                           <Download className="w-4 h-4"/>
                                       </button>
                                   </td>
@@ -688,7 +688,7 @@ const CRM: React.FC<CRMProps> = ({
                    <h2 className="text-2xl font-bold text-slate-800">Tasks</h2>
                    <p className="text-slate-500 text-sm">Follow-ups and to-dos</p>
               </div>
-              <button className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium flex gap-2 items-center hover:bg-indigo-700">
+              <button className="bg-black 600 text-white px-4 py-2 rounded-lg text-sm font-medium flex gap-2 items-center hover:bg-black 700">
                   <Plus className="w-4 h-4" /> New Task
               </button>
           </div>
@@ -699,7 +699,7 @@ const CRM: React.FC<CRMProps> = ({
                           <button 
                             onClick={() => onUpdateTask({...task, completed: !task.completed})}
                             className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-colors mt-0.5 ${
-                                task.completed ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-slate-300 hover:border-indigo-500'
+                                task.completed ? 'bg-black 600 border-black 600 text-white' : 'border-slate-300 hover:border-black 500'
                             }`}
                           >
                               {task.completed && <CheckCircle className="w-4 h-4" />}
@@ -708,8 +708,8 @@ const CRM: React.FC<CRMProps> = ({
                               <h3 className={`font-bold ${task.completed ? 'text-slate-500 line-through' : 'text-slate-800'}`}>{task.title}</h3>
                               <div className="flex flex-wrap items-center gap-3 mt-2">
                                   <div className="flex items-center gap-1.5 text-xs text-slate-500"><CalendarIcon className="w-3.5 h-3.5" />{new Date(task.dueDate).toLocaleDateString()}</div>
-                                  {task.leadName && (<div className="flex items-center gap-1.5 text-xs text-indigo-600 bg-indigo-50 px-2 py-1 rounded font-medium"><UserIcon className="w-3 h-3" />{task.leadName}</div>)}
-                                  <div className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${task.priority === 'HIGH' ? 'bg-red-100 text-red-600' : task.priority === 'MEDIUM' ? 'bg-amber-100 text-amber-600' : 'bg-blue-50 text-blue-600'}`}>{task.priority}</div>
+                                  {task.leadName && (<div className="flex items-center gap-1.5 text-xs text-white 600 bg-black 50 px-2 py-1 rounded font-medium"><UserIcon className="w-3 h-3" />{task.leadName}</div>)}
+                                  <div className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${task.priority === 'HIGH' ? 'bg-red-100 text-red-600' : task.priority === 'MEDIUM' ? 'bg-amber-100 text-amber-600' : 'bg-slate-50 text-slate-600'}`}>{task.priority}</div>
                               </div>
                           </div>
                       </div>
@@ -726,7 +726,7 @@ const CRM: React.FC<CRMProps> = ({
         <div className="flex items-center gap-3 md:gap-4 transition-all duration-300" style={{ width: isSidebarCollapsed ? '60px' : '240px' }}>
              <button onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 transition-colors hidden lg:block"><Menu className="w-5 h-5" /></button>
             <div className={`flex items-center gap-2 overflow-hidden transition-opacity duration-300 ${isSidebarCollapsed ? 'lg:opacity-0 lg:w-0' : 'opacity-100'}`}>
-                <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center text-white font-bold shadow-lg shadow-emerald-200 shrink-0">E</div>
+                <div className="w-8 h-8 bg-slate-600 rounded-lg flex items-center justify-center text-white font-bold shadow-lg shadow-slate-200 shrink-0">E</div>
                 <h1 className="text-xl font-bold text-slate-800 tracking-tight whitespace-nowrap">Eburon</h1>
             </div>
         </div>
@@ -767,7 +767,7 @@ const CRM: React.FC<CRMProps> = ({
                 <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden hidden group-hover:block animate-in fade-in slide-in-from-top-2 z-50">
                     <div className="px-4 py-2 bg-slate-50 border-b border-slate-100"><p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Switch Profile (Demo)</p></div>
                     {(['BROKER', 'OWNER', 'RENTER', 'CONTRACTOR'] as UserRole[]).map(r => (
-                        <button key={r} onClick={() => onSwitchUser(r)} className={`w-full text-left px-4 py-2 text-sm hover:bg-slate-50 flex items-center gap-2 ${currentUser.role === r ? 'bg-emerald-50 text-emerald-700 font-bold' : 'text-slate-600'}`}>
+                        <button key={r} onClick={() => onSwitchUser(r)} className={`w-full text-left px-4 py-2 text-sm hover:bg-slate-50 flex items-center gap-2 ${currentUser.role === r ? 'bg-slate-50 text-slate-700 font-bold' : 'text-slate-600'}`}>
                             <Users className="w-3 h-3"/> {r.charAt(0) + r.slice(1).toLowerCase()}
                         </button>
                     ))}
@@ -847,7 +847,7 @@ const CRM: React.FC<CRMProps> = ({
             <div className="mt-auto p-4 border-t border-slate-200">
                  <div className={`bg-slate-50 rounded-xl p-4 text-slate-500 transition-all duration-300 ${isSidebarCollapsed ? 'p-2' : 'p-4'}`}>
                      <div className="flex items-center gap-3 justify-center">
-                         <Shield className="w-5 h-5 text-emerald-500"/>
+                         <Shield className="w-5 h-5 text-slate-500"/>
                          {!isSidebarCollapsed && <div className="text-xs font-medium">Eburon Secure</div>}
                      </div>
                 </div>
@@ -887,7 +887,7 @@ const CRM: React.FC<CRMProps> = ({
                                     <h2 className="text-2xl font-bold text-slate-800">Leads</h2>
                                     <p className="text-slate-500 text-sm mt-1">Manage and track your potential clients</p>
                                 </div>
-                                <button className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 shadow-sm transition-colors flex items-center gap-2">
+                                <button className="bg-black 600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-black 700 shadow-sm transition-colors flex items-center gap-2">
                                     <UserIcon className="w-4 h-4" />
                                     Add Lead
                                 </button>
@@ -907,7 +907,7 @@ const CRM: React.FC<CRMProps> = ({
                                             <tr 
                                                 key={lead.id} 
                                                 onClick={() => onSelectLead(lead)}
-                                                className={`hover:bg-slate-50 cursor-pointer transition-colors ${selectedLeadId === lead.id ? 'bg-indigo-50/60' : ''}`}
+                                                className={`hover:bg-slate-50 cursor-pointer transition-colors ${selectedLeadId === lead.id ? 'bg-black 50/60' : ''}`}
                                             >
                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                     <div className="flex items-center gap-3">
@@ -921,7 +921,7 @@ const CRM: React.FC<CRMProps> = ({
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4 hidden md:table-cell whitespace-nowrap">
-                                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border bg-blue-50 text-blue-700 border-blue-100">
+                                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border bg-slate-50 text-slate-700 border-slate-100">
                                                         {lead.interest}
                                                     </span>
                                                 </td>
@@ -944,7 +944,7 @@ const CRM: React.FC<CRMProps> = ({
                         <>
                              <div className="flex justify-between items-center mb-6">
                                 <h2 className="text-2xl font-bold text-slate-800">Properties</h2>
-                                {currentUser.role === 'BROKER' && <button className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium">+ Add Property</button>}
+                                {currentUser.role === 'BROKER' && <button className="bg-black 600 text-white px-4 py-2 rounded-lg text-sm font-medium">+ Add Property</button>}
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {properties.map(prop => (
@@ -979,19 +979,19 @@ const CRM: React.FC<CRMProps> = ({
                              </div>
                              <div>
                                 <h2 className="text-xl font-bold text-slate-900">{activeLead.firstName} {activeLead.lastName}</h2>
-                                <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${activeLead.status === 'New' ? 'bg-blue-50 text-blue-700 border-blue-100' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>
+                                <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${activeLead.status === 'New' ? 'bg-slate-50 text-slate-700 border-slate-100' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>
                                     {activeLead.status}
                                 </span>
                              </div>
                         </div>
 
                         <div className="grid grid-cols-2 gap-3 mb-8">
-                            <a href={`tel:${activeLead.phone}`} className="flex flex-col items-center justify-center p-3 bg-indigo-50 hover:bg-indigo-100 border border-indigo-100 rounded-xl transition-colors group cursor-pointer">
-                                <div className="w-8 h-8 bg-indigo-200 text-indigo-700 rounded-full flex items-center justify-center mb-2 group-hover:bg-white group-hover:scale-110 transition-all shadow-sm">
+                            <a href={`tel:${activeLead.phone}`} className="flex flex-col items-center justify-center p-3 bg-black 50 hover:bg-black 100 border border-black 100 rounded-xl transition-colors group cursor-pointer">
+                                <div className="w-8 h-8 bg-black 200 text-white 700 rounded-full flex items-center justify-center mb-2 group-hover:bg-white group-hover:scale-110 transition-all shadow-sm">
                                     <Phone className="w-4 h-4 fill-current" />
                                 </div>
-                                <span className="text-xs font-bold text-indigo-900">Call Mobile</span>
-                                <span className="text-[10px] text-indigo-600 font-medium truncate max-w-full">{activeLead.phone}</span>
+                                <span className="text-xs font-bold text-white 900">Call Mobile</span>
+                                <span className="text-[10px] text-white 600 font-medium truncate max-w-full">{activeLead.phone}</span>
                             </a>
                             
                             <a href={`mailto:${activeLead.email}`} className="flex flex-col items-center justify-center p-3 bg-slate-50 hover:bg-slate-100 border border-slate-100 rounded-xl transition-colors group cursor-pointer">
@@ -1024,10 +1024,10 @@ const CRM: React.FC<CRMProps> = ({
                             <textarea 
                                 value={noteInput} 
                                 onChange={e => setNoteInput(e.target.value)} 
-                                className="w-full p-3 border border-slate-200 rounded-lg text-sm bg-white min-h-[100px] outline-none focus:ring-2 focus:ring-indigo-500/20"
+                                className="w-full p-3 border border-slate-200 rounded-lg text-sm bg-white min-h-[100px] outline-none focus:ring-2 focus:ring-slate-900 500/20"
                                 placeholder="Add a new note..."
                             />
-                            <button onClick={handleSaveNote} className="mt-2 w-full bg-indigo-600 text-white py-2 rounded-lg text-sm font-bold shadow-sm hover:bg-indigo-700 transition-colors">Save Note</button>
+                            <button onClick={handleSaveNote} className="mt-2 w-full bg-black 600 text-white py-2 rounded-lg text-sm font-bold shadow-sm hover:bg-black 700 transition-colors">Save Note</button>
                          </div>
                     </div>
                 </div>
