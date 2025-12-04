@@ -105,18 +105,20 @@ export const DEFAULT_AGENT_PERSONA: AgentPersona = {
   ],
   systemPrompt: LAURENT_SYSTEM_PROMPT,
   firstSentence: "Hi, this is Laurent De Wilde, a broker here in Belgium — you left your number on my site earlier, so I just wanted to personally see how I can help you with your property or search.",
-  voiceId: '55337f4e-482c-4644-b94e-d9671e4d7079'
+  voiceId: 'orus', // Vapi Orus voice
+  voiceSpeed: 1.2 // 1.2x speed
 };
 
 export const AVAILABLE_VOICES: VoiceOption[] = [
+    { id: 'orus', name: 'Orus (Vapi)', description: 'Natural, Conversational (Recommended)' },
     { id: '55337f4e-482c-4644-b94e-d9671e4d7079', name: 'Laurent (Babel)', description: 'Dutch-Flemish English Accent' },
     { id: '21m00Tcm4TlvDq8ikWAM', name: 'Rachel', description: 'American, Soft' },
     { id: 'AZnzlk1XvdvUeBnXmlld', name: 'Domi', description: 'Strong, Professional' },
     { id: 'EXAVITQu4vr4xnSDxMaL', name: 'Bella', description: 'Soft, Calm' },
-    { id: 'ErXwobaYiC019PkySvjV', name: 'Antoni', description: 'Deep, Confident' },
-    { id: 'MF3mGyEYCl7XYWbV9V6O', name: 'Elli', description: 'Expressive' },
-    { id: 'TxGEqnHWrfWFTfGW9XjX', name: 'Josh', description: 'Deep, Narrative' },
-    { id: 'VR6AewLTigWg4xSOukaG', name: 'Arnold', description: 'Authoritative' },
+    { id: 'ErXwobaYiN019PkySvjV', name: 'Antoni', description: 'Confident, Warm' },
+    { id: 'MF3mGyEYCl7XYWbV9V6O', name: 'Elli', description: 'Energetic, Clear' },
+    { id: 'TxGEqnHWrfWFTfGW9XjX', name: 'Josh', description: 'Friendly, Professional' },
+    { id: 'VR6AewLTigWG4xSOukaG', name: 'Arnold', description: 'Authoritative, Deep' },
     { id: 'pNInz6obpgDQGcFmaJgB', name: 'Adam', description: 'Deep, Conversational' },
     { id: 'yoZ06aMxZJJ28mfd3POQ', name: 'Sam', description: 'Raspy, Casual' }
 ];

@@ -113,6 +113,7 @@ export interface AgentPersona {
   objectives: string[];
   systemPrompt?: string;
   voiceId?: string;
+  voiceSpeed?: number;
   model?: string;
   tools?: string[];
   firstSentence?: string;
