@@ -12,7 +12,7 @@ import {
   Plus, Filter, Download, ArrowUpRight, ArrowDownLeft, AlertCircle, File, Image as ImageIcon,
   MessageSquare, BarChart3, Target, Bot, Users, CheckSquare, CalendarDays, Mic, Save
 } from 'lucide-react';
-import WebCall from './WebCall';
+// WebCall component removed - tab was deleted
 
 interface CRMProps {
   leads: Lead[];
@@ -31,7 +31,7 @@ interface CRMProps {
   onAgentsChange: (agents: AgentPersona[]) => void;
 }
 
-type TabType = 'dashboard' | 'leads' | 'properties' | 'notifications' | 'calendar' | 'documents' | 'finance' | 'marketing' | 'analytics' | 'settings' | 'maintenance' | 'requests' | 'my-home' | 'jobs' | 'schedule' | 'invoices' | 'agent-config' | 'inbox' | 'tasks' | 'web-call' | 'external-admin';
+type TabType = 'dashboard' | 'leads' | 'properties' | 'notifications' | 'calendar' | 'documents' | 'finance' | 'marketing' | 'analytics' | 'settings' | 'maintenance' | 'requests' | 'my-home' | 'jobs' | 'schedule' | 'invoices' | 'agent-config' | 'inbox' | 'tasks';
 
 const CRM: React.FC<CRMProps> = ({ 
     leads, properties, onSelectLead, selectedLeadId, onUpdateLead, currentUser, onLogout,
@@ -465,20 +465,7 @@ const CRM: React.FC<CRMProps> = ({
       </div>
   );
 
-  const ExternalAdminView = () => (
-      <div className="w-full h-full flex flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-          <div className="p-4 border-b border-slate-200 bg-slate-50">
-              <h2 className="text-lg font-bold text-slate-800">Eburon Admin Portal</h2>
-              <p className="text-sm text-slate-500">External administration interface</p>
-          </div>
-          <iframe 
-              src="https://eburon-v02srcd.vercel.app/admin"
-              className="flex-1 w-full border-0"
-              title="External Admin Portal"
-              allow="clipboard-read; clipboard-write"
-          />
-      </div>
-  );
+  // ExternalAdminView removed - tab was deleted
 
   const MarketingView = () => (
       <div className="animate-in fade-in duration-500">
@@ -873,8 +860,6 @@ const CRM: React.FC<CRMProps> = ({
                     </div>
                     <div className="px-3 mt-4 space-y-0.5">
                         <NavItem id="agent-config" label="Agent Config" icon={Bot} />
-                        <NavItem id="web-call" label="Web Call" icon={Phone} />
-                        <NavItem id="external-admin" label="Admin Portal" icon={LayoutDashboard} />
                     </div>
                 </>
              )}
@@ -933,8 +918,6 @@ const CRM: React.FC<CRMProps> = ({
                     {tab === 'dashboard' && <DashboardView />}
                     {tab === 'inbox' && <InboxView />}
                     {tab === 'agent-config' && <AgentConfigView />}
-                    {tab === 'web-call' && <WebCall />}
-                    {tab === 'external-admin' && <ExternalAdminView />}
                     {tab === 'marketing' && <MarketingView />}
                     {tab === 'analytics' && <AnalyticsView />}
                     {tab === 'documents' && <DocumentsView />}
