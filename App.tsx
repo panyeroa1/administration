@@ -5,7 +5,7 @@ import CRM from './components/CRM';
 import Auth from './components/Auth';
 import { Lead, CallState, Recording, User, Property, AgentPersona, UserRole, Task } from './types';
 import { geminiClient } from './services/geminiService';
-import { vapiService } from './services/vapiService';
+// vapiService removed - Dialer now embeds app.eburon.ai directly
 import { Download, Save, Trash2, X, AlertCircle, Loader2, Phone, LayoutDashboard, User as UserIcon, Settings, Menu } from 'lucide-react';
 import { db } from './services/db';
 import { DEFAULT_AGENT_PERSONA, generateSystemPrompt } from './constants';
@@ -187,50 +187,19 @@ const App: React.FC = () => {
         }
     });
 
-    // 3. Initiate Call via Vapi Service
-    try {
-        const result = await vapiService.initiateCall(number, agentPersona);
-        
-        if (result.status === 'success' && result.call_id) {
-            console.log("Call Initiated:", result.call_id);
-            setCurrentCallId(result.call_id); // Save ID for fetching recording later
-            
-            // Wait for 9s ring effect to complete or match ring time
-            ringTimeoutRef.current = setTimeout(async () => {
-                if (ringtoneRef.current) {
-                    ringtoneRef.current.pause();
-                    ringtoneRef.current = null;
-                }
-                
-                setCallState(CallState.ACTIVE);
-                setRecordingStartTime(Date.now()); // Fallback start time
-                
-                // Attempt to connect to live monitoring stream for visualization
-                const wsUrl = await vapiService.listenToCall(result.call_id);
-                if (wsUrl) {
-                    const ws = new WebSocket(wsUrl);
-                    ws.onmessage = () => {
-                         setAudioVols({ in: Math.random() * 0.5, out: Math.random() * 0.5 });
-                    };
-                    setMonitorWs(ws);
-                }
-
-            }, 9000); 
-
-        } else {
-             throw new Error(result.message || "Call failed to start");
-        }
-    } catch (e) {
-        console.error("Failed to connect call", e);
+    // Calls are now handled by the embedded app.eburon.ai iframe
+    // This function is kept for compatibility but doesn't initiate external calls
+    console.log('Call would be initiated to:', number);
+    
+    // Simulate ringing for 3 seconds then go active
+    ringTimeoutRef.current = setTimeout(() => {
         if (ringtoneRef.current) {
-            try {
-                ringtoneRef.current.pause();
-            } catch (err) { /* ignore cleanup error */ }
+            ringtoneRef.current.pause();
             ringtoneRef.current = null;
         }
-        setCallState(CallState.ERROR);
-        setTimeout(() => setCallState(CallState.IDLE), 2000);
-    }
+        setCallState(CallState.ACTIVE);
+        setRecordingStartTime(Date.now());
+    }, 3000);
   };
 
   const stopRecordingAndPrompt = async () => {
@@ -243,47 +212,18 @@ const App: React.FC = () => {
 
     setIsFetchingRecording(true);
     
-    // Polling logic: Attempt to get the recording URL 3 times
-    let attempts = 0;
-    const maxAttempts = 3;
+
     
-    const fetchLoop = async () => {
-        try {
-            const callData = await vapiService.getCallDetails(currentCallId);
-            
-            if (callData && callData.recording_url) {
-                // Success - we have the real URL
-                const duration = callData.call_length 
-                    ? Math.round(callData.call_length * 60) // API usually returns minutes? check docs. Usually float minutes.
-                    : Math.floor((Date.now() - recordingStartTime) / 1000); // Fallback
-
-                setPendingRecording({
-                   url: callData.recording_url,
-                   duration: duration, 
-                   timestamp: recordingStartTime
-                });
-                setRecordingOutcome('connected');
-                setIsFetchingRecording(false);
-            } else {
-                // Not ready yet, retry
-                attempts++;
-                if (attempts < maxAttempts) {
-                    console.log(`Recording not ready, retrying (${attempts}/${maxAttempts})...`);
-                    setTimeout(fetchLoop, 2000); // Wait 2s
-                } else {
-                    console.warn("Recording URL not found after retries.");
-                    setIsFetchingRecording(false);
-                    // Optional: Show error or just close
-                }
-            }
-        } catch (e) {
-            console.error("Error fetching call details", e);
-            setIsFetchingRecording(false);
-        }
-    };
-
-    // Start fetching
-    setTimeout(fetchLoop, 1000); // Initial delay
+    // Recording fetching is now handled by the embedded app
+    // This is a placeholder for compatibility
+    const duration = Math.floor((Date.now() - recordingStartTime) / 1000);
+    setPendingRecording({
+        url: '',
+        duration: duration,
+        timestamp: recordingStartTime
+    });
+    setRecordingOutcome('connected');
+    setIsFetchingRecording(false);
   };
 
   const handleEndCall = async () => {
