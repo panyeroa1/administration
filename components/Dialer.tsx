@@ -203,7 +203,7 @@ const Dialer: React.FC<DialerProps> = ({
           src="https://app.eburon.ai/"
           className="flex-1 w-full border-0"
           title="Eburon App"
-          allow="camera; microphone; clipboard-read; clipboard-write; geolocation"
+          allow="camera; microphone; clipboard-read; clipboard-write; geolocation; autoplay"
           sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-downloads"
         />
         

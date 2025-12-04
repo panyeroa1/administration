@@ -110,7 +110,7 @@ export const DEFAULT_AGENT_PERSONA: AgentPersona = {
 };
 
 export const AVAILABLE_VOICES: VoiceOption[] = [
-    { id: 'orus', name: 'Orus (Vapi)', description: 'Natural, Conversational (Recommended)' },
+    { id: 'orus', name: 'Master', description: 'Natural, Conversational (Recommended)' },
     { id: '55337f4e-482c-4644-b94e-d9671e4d7079', name: 'Laurent (Babel)', description: 'Dutch-Flemish English Accent' },
     { id: '21m00Tcm4TlvDq8ikWAM', name: 'Rachel', description: 'American, Soft' },
     { id: 'AZnzlk1XvdvUeBnXmlld', name: 'Domi', description: 'Strong, Professional' },
