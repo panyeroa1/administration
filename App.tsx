@@ -2,12 +2,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Dialer from './components/Dialer';
 import CRM from './components/CRM';
+import Auth from './components/Auth';
 import { Lead, CallState, Recording, User, Property, AgentPersona, UserRole, Task } from './types';
 import { geminiClient } from './services/geminiService';
-import { blandService } from './services/blandService';
+import { vapiService } from './services/vapiService';
 import { Download, Save, Trash2, X, AlertCircle, Loader2, Phone, LayoutDashboard, User as UserIcon, Settings, Menu } from 'lucide-react';
 import { db } from './services/db';
 import { DEFAULT_AGENT_PERSONA, generateSystemPrompt } from './constants';
+import { supabase } from './supabaseClient';
 
 interface PendingRec {
   url: string;
@@ -15,16 +17,9 @@ interface PendingRec {
   timestamp: number;
 }
 
-const DEFAULT_USER: User = {
-  id: 'demo-broker',
-  name: 'Laurent De Wilde',
-  email: 'laurent@eburon.com',
-  role: 'BROKER',
-  avatar: 'https://ui-avatars.com/api/?name=Laurent+De+Wilde&background=random'
-};
-
 const App: React.FC = () => {
-  const [currentUser, setCurrentUser] = useState<User | null>(DEFAULT_USER);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
   const [activeLead, setActiveLead] = useState<Lead | null>(null);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
@@ -54,8 +49,28 @@ const App: React.FC = () => {
   const ringtoneRef = useRef<HTMLAudioElement | null>(null);
   const ringTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
-  // Bland AI Monitoring Socket
+  // Vapi Monitoring Socket (if applicable, currently placeholder)
   const [monitorWs, setMonitorWs] = useState<WebSocket | null>(null);
+
+  // Check for existing session on mount
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          const userProfile = await db.getUserProfile(session.user.id);
+          if (userProfile) {
+            setCurrentUser(userProfile);
+          }
+        }
+      } catch (error) {
+        console.error('Error checking session:', error);
+      } finally {
+        setIsCheckingSession(false);
+      }
+    };
+    checkSession();
+  }, []);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -172,9 +187,9 @@ const App: React.FC = () => {
         }
     });
 
-    // 3. Initiate Call via Bland AI Service
+    // 3. Initiate Call via Vapi Service
     try {
-        const result = await blandService.initiateCall(number, agentPersona);
+        const result = await vapiService.initiateCall(number, agentPersona);
         
         if (result.status === 'success' && result.call_id) {
             console.log("Call Initiated:", result.call_id);
@@ -191,7 +206,7 @@ const App: React.FC = () => {
                 setRecordingStartTime(Date.now()); // Fallback start time
                 
                 // Attempt to connect to live monitoring stream for visualization
-                const wsUrl = await blandService.listenToCall(result.call_id);
+                const wsUrl = await vapiService.listenToCall(result.call_id);
                 if (wsUrl) {
                     const ws = new WebSocket(wsUrl);
                     ws.onmessage = () => {
@@ -234,7 +249,7 @@ const App: React.FC = () => {
     
     const fetchLoop = async () => {
         try {
-            const callData = await blandService.getCallDetails(currentCallId);
+            const callData = await vapiService.getCallDetails(currentCallId);
             
             if (callData && callData.recording_url) {
                 // Success - we have the real URL
@@ -361,15 +376,25 @@ const App: React.FC = () => {
       setCurrentCallId(null);
   };
 
-  const handleLogout = () => {
-      if (window.confirm("Are you sure you want to sign out? (Demo: This will reset the session)")) {
-          setCurrentUser(DEFAULT_USER);
-          window.location.reload(); 
+  const handleLogout = async () => {
+      if (window.confirm("Are you sure you want to sign out?")) {
+          await supabase.auth.signOut();
+          setCurrentUser(null);
       }
   };
 
-  if (!currentUser) {
+  const handleLogin = (user: User) => {
+      setCurrentUser(user);
+  };
+
+  // Show loading during session check
+  if (isCheckingSession) {
       return <div className="h-screen w-screen flex items-center justify-center bg-slate-50 text-slate-400">Loading...</div>;
+  }
+
+  // Show Auth component if not authenticated
+  if (!currentUser) {
+      return <Auth onLogin={handleLogin} />;
   }
 
   // --- MOBILE COMPONENTS ---
@@ -569,7 +594,7 @@ const App: React.FC = () => {
              <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 animate-in zoom-in-95 duration-200 border border-slate-200">
                  <div className="flex justify-between items-center mb-4">
                      <h3 className="text-xl font-bold text-slate-800">Call Recording</h3>
-                     <button onClick={handleDiscardRecording} className="p-1 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-colors">
+                     <button onClick={handleDiscardRecording} aria-label="Close recording modal" className="p-1 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-colors">
                         <X className="w-5 h-5" />
                      </button>
                  </div>

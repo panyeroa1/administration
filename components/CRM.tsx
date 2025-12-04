@@ -12,6 +12,7 @@ import {
   Plus, Filter, Download, ArrowUpRight, ArrowDownLeft, AlertCircle, File, Image as ImageIcon,
   MessageSquare, BarChart3, Target, Bot, Users, CheckSquare, CalendarDays, Mic, Save
 } from 'lucide-react';
+import WebCall from './WebCall';
 
 interface CRMProps {
   leads: Lead[];
@@ -30,7 +31,7 @@ interface CRMProps {
   onAgentsChange: (agents: AgentPersona[]) => void;
 }
 
-type TabType = 'dashboard' | 'leads' | 'properties' | 'notifications' | 'calendar' | 'documents' | 'finance' | 'marketing' | 'analytics' | 'settings' | 'maintenance' | 'requests' | 'my-home' | 'jobs' | 'schedule' | 'invoices' | 'agent-config' | 'inbox' | 'tasks';
+type TabType = 'dashboard' | 'leads' | 'properties' | 'notifications' | 'calendar' | 'documents' | 'finance' | 'marketing' | 'analytics' | 'settings' | 'maintenance' | 'requests' | 'my-home' | 'jobs' | 'schedule' | 'invoices' | 'agent-config' | 'inbox' | 'tasks' | 'web-call';
 
 const CRM: React.FC<CRMProps> = ({ 
     leads, properties, onSelectLead, selectedLeadId, onUpdateLead, currentUser, onLogout,
@@ -89,9 +90,59 @@ const CRM: React.FC<CRMProps> = ({
       }
   };
 
+  // --- Button Handlers ---
+  const handleCreateCampaign = () => {
+      const name = window.prompt("Enter campaign name:");
+      if (name) alert(`Campaign "${name}" created! (Mock)`);
+  };
+
+  const handleCreateTicket = () => {
+      const title = window.prompt("Enter ticket issue:");
+      if (title) alert(`Ticket "${title}" created! (Mock)`);
+  };
+
+  const handleComposeEmail = () => {
+      alert("Compose Email feature coming soon!");
+  };
+
+  const handleUploadDocument = () => {
+      alert("Upload Document feature coming soon!");
+  };
+
+  const handleGenerateInvoice = () => {
+      alert("Generate Invoice feature coming soon!");
+  };
+
+  const handleAddTask = async () => {
+      const title = window.prompt("Enter task title:");
+      if (!title) return;
+      
+      const newTask: Task = {
+          id: crypto.randomUUID(),
+          title,
+          completed: false,
+          dueDate: new Date().toISOString().split('T')[0],
+          priority: 'MEDIUM'
+      };
+      
+      try {
+        await db.createTask(newTask);
+        alert("Task created! Please refresh to see it.");
+      } catch (e) {
+        console.error(e);
+        alert("Failed to create task");
+      }
+  };
+
+  const handleAddProperty = () => {
+      alert("Add Property feature coming soon!");
+  };
+
+
   const NavItem = ({ id, label, icon: Icon, badge }: { id: TabType, label: string, icon: any, badge?: string }) => (
     <button 
         onClick={() => setTab(id)}
+        aria-label={label}
         className={`w-full text-left px-3 py-2.5 rounded-lg flex items-center gap-3 text-sm font-medium transition-all duration-200 relative group overflow-hidden ${
           tab === id ? 'bg-black 50 text-white 700' : 'text-slate-600 hover:bg-slate-50'
         } ${isSidebarCollapsed ? 'justify-center' : ''}`}
@@ -209,7 +260,7 @@ const CRM: React.FC<CRMProps> = ({
           <div className="w-64 bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col overflow-hidden shrink-0">
               <div className="p-4 border-b border-slate-100 flex justify-between items-center">
                   <h3 className="font-bold text-slate-700">Agents</h3>
-                  <button onClick={handleCreateNew} className="p-1 hover:bg-slate-100 rounded-lg text-white 600">
+                  <button onClick={handleCreateNew} aria-label="Create new agent" className="p-1 hover:bg-slate-100 rounded-lg text-white 600">
                       <Plus className="w-5 h-5"/>
                   </button>
               </div>
@@ -234,6 +285,7 @@ const CRM: React.FC<CRMProps> = ({
                   {/* Quick Load Dropdown */}
                   <div className="mb-6 flex items-center justify-end">
                       <select 
+                        aria-label="Quick load persona"
                         className="bg-slate-50 border border-slate-200 text-slate-600 text-sm rounded-lg p-2 focus:ring-2 focus:ring-emerald-500 outline-none"
                         onChange={(e) => {
                              // This relies on parent passing logic or direct import. 
@@ -349,15 +401,15 @@ const CRM: React.FC<CRMProps> = ({
                               <div className="mt-4 p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-4">
                                   <div>
                                       <label className="block text-xs font-bold text-slate-500 mb-1">Model</label>
-                                      <input type="text" value={editPersona.model || 'base'} readOnly className="w-full px-3 py-2 bg-white border border-slate-200 rounded text-sm text-slate-500"/>
+                                      <input type="text" value={editPersona.model || 'base'} readOnly aria-label="Model" className="w-full px-3 py-2 bg-white border border-slate-200 rounded text-sm text-slate-500"/>
                                   </div>
                                   <div>
                                       <label className="block text-xs font-bold text-slate-500 mb-1">Tools</label>
-                                      <input type="text" value={editPersona.tools?.join(', ') || ''} readOnly className="w-full px-3 py-2 bg-white border border-slate-200 rounded text-sm text-slate-500"/>
+                                      <input type="text" value={editPersona.tools?.join(', ') || ''} readOnly aria-label="Tools" className="w-full px-3 py-2 bg-white border border-slate-200 rounded text-sm text-slate-500"/>
                                   </div>
                                   <div>
                                       <label className="block text-xs font-bold text-slate-500 mb-1">Temperature</label>
-                                      <input type="text" value="0.6" readOnly className="w-full px-3 py-2 bg-white border border-slate-200 rounded text-sm text-slate-500"/>
+                                      <input type="text" value="0.6" readOnly aria-label="Temperature value" className="w-full px-3 py-2 bg-white border border-slate-200 rounded text-sm text-slate-500"/>
                                   </div>
                               </div>
                           )}
@@ -417,7 +469,7 @@ const CRM: React.FC<CRMProps> = ({
       <div className="animate-in fade-in duration-500">
            <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-slate-800">Marketing</h2>
-                <button className="bg-black 600 text-white px-4 py-2 rounded-lg text-sm font-medium flex gap-2 items-center">
+                <button onClick={handleCreateCampaign} className="bg-black 600 text-white px-4 py-2 rounded-lg text-sm font-medium flex gap-2 items-center">
                     <Plus className="w-4 h-4" /> New Campaign
                 </button>
            </div>
@@ -484,7 +536,7 @@ const CRM: React.FC<CRMProps> = ({
                 <h2 className="text-2xl font-bold text-slate-800">Maintenance Tickets</h2>
                 <p className="text-slate-500 text-sm">Track repairs and requests</p>
               </div>
-              <button className="bg-black 600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-black 700 flex items-center gap-2">
+              <button onClick={handleCreateTicket} className="bg-black 600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-black 700 flex items-center gap-2">
                   <Plus className="w-4 h-4"/> New Ticket
               </button>
           </div>
@@ -527,7 +579,6 @@ const CRM: React.FC<CRMProps> = ({
                           <div className={`flex items-center gap-1.5 text-xs font-bold ${
                               ticket.status === 'COMPLETED' ? 'text-slate-600' : 'text-white 600'
                           }`}>
-                              {ticket.status === 'COMPLETED' ? <CheckCircle className="w-3.5 h-3.5"/> : <Clock className="w-3.5 h-3.5"/>}
                               {ticket.status}
                           </div>
                           <button className="text-slate-400 hover:text-white 600 text-xs font-medium">Details &rarr;</button>
@@ -595,9 +646,9 @@ const CRM: React.FC<CRMProps> = ({
           <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-slate-800">{monthNames[month]} {year}</h2>
               <div className="flex gap-2">
-                  <button onClick={() => setCurrentDate(new Date(year, month - 1, 1))} className="p-2 border rounded-lg hover:bg-slate-50"><ChevronLeft className="w-4 h-4"/></button>
-                  <button onClick={() => setCurrentDate(new Date())} className="px-3 py-1 text-xs font-bold border rounded-lg hover:bg-slate-50">Today</button>
-                  <button onClick={() => setCurrentDate(new Date(year, month + 1, 1))} className="p-2 border rounded-lg hover:bg-slate-50"><ChevronRight className="w-4 h-4"/></button>
+                  <button onClick={() => setCurrentDate(new Date(year, month - 1, 1))} aria-label="Previous month" className="p-2 border rounded-lg hover:bg-slate-50"><ChevronLeft className="w-4 h-4"/></button>
+                  <button onClick={() => setCurrentDate(new Date())} aria-label="Today" className="px-3 py-1 text-xs font-bold border rounded-lg hover:bg-slate-50">Today</button>
+                  <button onClick={() => setCurrentDate(new Date(year, month + 1, 1))} aria-label="Next month" className="p-2 border rounded-lg hover:bg-slate-50"><ChevronRight className="w-4 h-4"/></button>
               </div>
           </div>
           <div className="grid grid-cols-7 gap-px bg-slate-200 border border-slate-200 rounded-lg overflow-hidden flex-1">
@@ -631,8 +682,8 @@ const CRM: React.FC<CRMProps> = ({
                    <h2 className="text-2xl font-bold text-slate-800">Documents</h2>
                    <p className="text-slate-500 text-sm">Contracts, Invoices, and Reports</p>
               </div>
-              <button className="bg-black 600 text-white px-4 py-2 rounded-lg text-sm font-medium flex gap-2 items-center hover:bg-black 700">
-                  <Plus className="w-4 h-4" /> Upload
+              <button onClick={handleUploadDocument} className="bg-black 600 text-white px-4 py-2 rounded-lg text-sm font-medium flex gap-2 items-center hover:bg-black 700">
+                  <Plus className="w-4 h-4" /> Upload Document
               </button>
           </div>
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm flex-1 overflow-hidden flex flex-col">
@@ -668,7 +719,7 @@ const CRM: React.FC<CRMProps> = ({
                                   <td className="px-6 py-4 text-slate-500">{doc.date}</td>
                                   <td className="px-6 py-4 text-slate-500 font-mono text-xs">{doc.size}</td>
                                   <td className="px-6 py-4 text-right">
-                                      <button className="text-slate-400 hover:text-white 600 transition-colors">
+                                      <button aria-label="Download document" className="text-slate-400 hover:text-white 600 transition-colors">
                                           <Download className="w-4 h-4"/>
                                       </button>
                                   </td>
@@ -688,7 +739,7 @@ const CRM: React.FC<CRMProps> = ({
                    <h2 className="text-2xl font-bold text-slate-800">Tasks</h2>
                    <p className="text-slate-500 text-sm">Follow-ups and to-dos</p>
               </div>
-              <button className="bg-black 600 text-white px-4 py-2 rounded-lg text-sm font-medium flex gap-2 items-center hover:bg-black 700">
+              <button onClick={handleAddTask} className="bg-black 600 text-white px-4 py-2 rounded-lg text-sm font-medium flex gap-2 items-center hover:bg-black 700">
                   <Plus className="w-4 h-4" /> New Task
               </button>
           </div>
@@ -724,7 +775,7 @@ const CRM: React.FC<CRMProps> = ({
       {/* CRM Header */}
       <header className="bg-white border-b border-slate-200 px-4 md:px-6 py-3 flex items-center justify-between shrink-0 z-30 h-16 shadow-sm relative">
         <div className="flex items-center gap-3 md:gap-4 transition-all duration-300" style={{ width: isSidebarCollapsed ? '60px' : '240px' }}>
-             <button onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 transition-colors hidden lg:block"><Menu className="w-5 h-5" /></button>
+             <button onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} aria-label="Toggle sidebar" className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 transition-colors hidden lg:block"><Menu className="w-5 h-5" /></button>
             <div className={`flex items-center gap-2 overflow-hidden transition-opacity duration-300 ${isSidebarCollapsed ? 'lg:opacity-0 lg:w-0' : 'opacity-100'}`}>
                 <div className="w-8 h-8 bg-slate-600 rounded-lg flex items-center justify-center text-white font-bold shadow-lg shadow-slate-200 shrink-0">E</div>
                 <h1 className="text-xl font-bold text-slate-800 tracking-tight whitespace-nowrap">Eburon</h1>
@@ -734,7 +785,7 @@ const CRM: React.FC<CRMProps> = ({
         <div className="flex items-center gap-4 flex-1 justify-end">
              {/* Notification Bell */}
              <div className="relative">
-                 <button onClick={() => setShowNotifications(!showNotifications)} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors relative">
+                 <button onClick={() => setShowNotifications(!showNotifications)} aria-label="View notifications" className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors relative">
                     <Bell className="w-5 h-5" />
                     {unreadCount > 0 && (<span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>)}
                  </button>
@@ -805,7 +856,10 @@ const CRM: React.FC<CRMProps> = ({
                         <NavItem id="marketing" label="Marketing" icon={Megaphone} />
                         <NavItem id="analytics" label="Analytics" icon={PieChart} />
                     </div>
-                    <div className="px-3 mt-4"><NavItem id="agent-config" label="Agent Config" icon={Bot} /></div>
+                    <div className="px-3 mt-4 space-y-0.5">
+                        <NavItem id="agent-config" label="Agent Config" icon={Bot} />
+                        <NavItem id="web-call" label="Web Call" icon={Phone} />
+                    </div>
                 </>
              )}
              
@@ -863,6 +917,7 @@ const CRM: React.FC<CRMProps> = ({
                     {tab === 'dashboard' && <DashboardView />}
                     {tab === 'inbox' && <InboxView />}
                     {tab === 'agent-config' && <AgentConfigView />}
+                    {tab === 'web-call' && <WebCall />}
                     {tab === 'marketing' && <MarketingView />}
                     {tab === 'analytics' && <AnalyticsView />}
                     {tab === 'documents' && <DocumentsView />}
@@ -944,7 +999,7 @@ const CRM: React.FC<CRMProps> = ({
                         <>
                              <div className="flex justify-between items-center mb-6">
                                 <h2 className="text-2xl font-bold text-slate-800">Properties</h2>
-                                {currentUser.role === 'BROKER' && <button className="bg-black 600 text-white px-4 py-2 rounded-lg text-sm font-medium">+ Add Property</button>}
+                                {currentUser.role === 'BROKER' && <button onClick={handleAddProperty} className="bg-black 600 text-white px-4 py-2 rounded-lg text-sm font-medium">+ Add Property</button>}
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {properties.map(prop => (
@@ -970,7 +1025,7 @@ const CRM: React.FC<CRMProps> = ({
                 <div className="w-full lg:w-[380px] shrink-0 bg-white border-l border-slate-200 shadow-2xl overflow-y-auto z-20 lg:relative absolute inset-0 lg:inset-auto animate-in slide-in-from-right duration-300 flex flex-col">
                     <div className="p-6 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white z-10">
                         <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider">Lead Details</h3>
-                        <button onClick={() => onSelectLead(null)} className="p-1 hover:bg-slate-100 rounded-lg"><X className="w-5 h-5 text-slate-500" /></button>
+                        <button onClick={() => onSelectLead(null)} aria-label="Close lead details" className="p-1 hover:bg-slate-100 rounded-lg"><X className="w-5 h-5 text-slate-500" /></button>
                     </div>
                     <div className="p-6">
                          <div className="flex items-center gap-4 mb-6">
