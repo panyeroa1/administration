@@ -14,7 +14,7 @@
       }
       .no-scrollbar {
           -ms-overflow-style: none;
-          scrollbar-width: none;
+          scrollbar-width: none; /* Modern browsers (Chrome 121+, Firefox) - graceful degradation for older browsers */
       }
     </style>
   <script type="importmap">

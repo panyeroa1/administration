@@ -524,6 +524,7 @@ const CRM: React.FC<CRMProps> = ({
                    <BarChart3 className="w-16 h-16 text-white 100 mb-4"/>
                    <h3 className="text-lg font-bold text-slate-700">Performance Metrics</h3>
                    <div className="flex gap-2 items-end h-32 mt-4">
+                        {/* Dynamic heights based on data - inline style required for data-driven rendering */}
                         {[40, 70, 45, 90, 65, 80, 50].map((h, i) => (
                             <div key={i} style={{height: `${h}%`}} className="w-4 bg-slate-500 rounded-t-sm"></div>
                         ))}
@@ -789,7 +790,7 @@ const CRM: React.FC<CRMProps> = ({
     <div className="flex flex-col h-full bg-slate-50">
       {/* CRM Header */}
       <header className="bg-white border-b border-slate-200 px-4 md:px-6 py-3 flex items-center justify-between shrink-0 z-30 h-16 shadow-sm relative">
-        <div className="flex items-center gap-3 md:gap-4 transition-all duration-300" style={{ width: isSidebarCollapsed ? '60px' : '240px' }}>
+        <div className={`flex items-center gap-3 md:gap-4 transition-all duration-300 ${isSidebarCollapsed ? 'w-[60px]' : 'w-[240px]'}`}>
              <button onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} aria-label="Toggle sidebar" className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 transition-colors hidden lg:block"><Menu className="w-5 h-5" /></button>
             <div className={`flex items-center gap-2 overflow-hidden transition-opacity duration-300 ${isSidebarCollapsed ? 'lg:opacity-0 lg:w-0' : 'opacity-100'}`}>
                 <div className="w-8 h-8 bg-slate-600 rounded-lg flex items-center justify-center text-white font-bold shadow-lg shadow-slate-200 shrink-0">E</div>
@@ -849,8 +850,7 @@ const CRM: React.FC<CRMProps> = ({
       <div className="flex-1 flex overflow-hidden bg-slate-50/50 relative">
         {/* Sidebar Nav */}
         <nav 
-            className={`bg-white border-r border-slate-200 flex flex-col pt-4 overflow-y-auto no-scrollbar hidden lg:flex shrink-0 transition-all duration-300 ease-in-out text-slate-600`}
-            style={{ width: isSidebarCollapsed ? '80px' : '260px' }}
+            className={`bg-white border-r border-slate-200 flex flex-col pt-4 overflow-y-auto no-scrollbar hidden lg:flex shrink-0 transition-all duration-300 ease-in-out text-slate-600 ${isSidebarCollapsed ? 'w-[80px]' : 'w-[260px]'}`}
         >
              {currentUser.role === 'BROKER' && (
                 <>
