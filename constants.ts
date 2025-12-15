@@ -1,5 +1,5 @@
 
-import { Lead, Property, Notification, Document, AgentPersona, Email, Campaign, BlandConfig, VoiceOption } from './types';
+import { Lead, Property, Listing, Notification, Document, AgentPersona, Email, Campaign, BlandConfig, VoiceOption } from './types';
 
 export const LAURENT_SYSTEM_PROMPT = `
 You are **Laurent De Wilde**.
@@ -212,6 +212,88 @@ export const MOCK_PROPERTIES: Property[] = [
   }
 ];
 
+export const MOCK_LISTINGS: Listing[] = [
+    {
+        id: '1',
+        name: 'Modern Loft in Ghent Center',
+        address: 'Kouter 12, 9000 Gent',
+        price: 1200,
+        imageUrls: ['https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'],
+        energyClass: 'A',
+        type: 'loft',
+        size: 95,
+        description: 'Beautiful modern loft with high ceilings and plenty of natural light. Located in the heart of Ghent.',
+        bedrooms: 1,
+        petsAllowed: true,
+        ownerId: 'u1'
+    },
+    {
+        id: '2',
+        name: 'Cozy Studio near Station',
+        address: 'Koningin Astridlaan 45, 9000 Gent',
+        price: 750,
+        imageUrls: ['https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'],
+        energyClass: 'B',
+        type: 'studio',
+        size: 40,
+        description: 'Compact but fully equipped studio. Perfect for students or young professionals.',
+        bedrooms: 0,
+        petsAllowed: false
+    },
+    {
+        id: '3',
+        name: 'Luxury Apartment with View',
+        address: 'Korenlei 8, 9000 Gent',
+        price: 1800,
+        imageUrls: ['https://images.unsplash.com/photo-1512918760532-3edbed72481b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'],
+        energyClass: 'A+',
+        type: 'apartment',
+        size: 120,
+        description: 'Stunning views over the Leie river. High-end finishing and spacious terrace.',
+        bedrooms: 2,
+        petsAllowed: true
+    },
+    {
+        id: '4',
+        name: 'Family House in Green Area',
+        address: 'Parklaan 15, 9050 Gentbrugge',
+        price: 1450,
+        imageUrls: ['https://images.unsplash.com/photo-1568605114967-8130f3a36994?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'],
+        energyClass: 'C',
+        type: 'house',
+        size: 160,
+        description: 'Spacious family home with a large garden. Quiet neighborhood near parks.',
+        bedrooms: 3,
+        petsAllowed: true
+    },
+    {
+        id: '5',
+        name: 'Penthouse with Skyline View',
+        address: 'Frankrijklei 100, 2000 Antwerpen',
+        price: 2500,
+        imageUrls: ['https://images.unsplash.com/photo-1512915922686-57c11dde9b6b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'],
+        energyClass: 'B',
+        type: 'penthouse',
+        size: 180,
+        description: 'Exclusive penthouse with private elevator and rooftop terrace.',
+        bedrooms: 3,
+        petsAllowed: false
+    },
+    {
+        id: '6',
+        name: 'Student Room (Kot)',
+        address: 'Overpoortstraat 5, 9000 Gent',
+        price: 450,
+        imageUrls: ['https://images.unsplash.com/photo-1555854877-bab0e564b8d5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'],
+        energyClass: 'D',
+        type: 'kot',
+        size: 15,
+        description: 'Standard student room with shared kitchen and bathroom. lively area.',
+        bedrooms: 1,
+        petsAllowed: false
+    }
+];
+
 export const MOCK_NOTIFICATIONS: Record<string, Notification[]> = {
   BROKER: [
     { id: '1', title: 'New Lead', message: 'Sophie Dubois submitted a contact form.', time: '10m ago', read: false, type: 'info' },
@@ -333,7 +415,7 @@ export const PREDEFINED_AGENTS: Record<string, AgentPersona> = {
 - You are professional and slightly formal, but not robotic.
 - You respect their intelligence. You assume they know real estate basics.
 - You focus on the "bottom line".
-- If they ask about the kitchen color, you pivot to the renovation value add.
+- If they are vague about budget, you pivot to the renovation value add.
 
 **RULES:**
 - Never say you are an AI. You are Marcus.

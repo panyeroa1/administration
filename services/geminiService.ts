@@ -20,13 +20,14 @@ export class GeminiLiveClient {
 
   public onVolumeChange: ((inputVol: number, outputVol: number) => void) | null = null;
   public onClose: (() => void) | null = null;
+  public onToolCall: ((toolCalls: any[]) => Promise<any[]>) | null = null;
 
   constructor() {
     // Client is initialized in connect()
   }
 
-  // Updated to accept optional custom system prompt
-  async connect(customSystemPrompt?: string) {
+  // Updated to accept optional custom system prompt and tools
+  async connect(customSystemPrompt?: string, tools?: any[]) {
     this.disconnect(); // Clean up existing
 
     // Initialize AI Client here to ensure we get the latest process.env.API_KEY
@@ -75,6 +76,7 @@ export class GeminiLiveClient {
         },
         // Use custom prompt if provided, else fallback to default constant
         systemInstruction: customSystemPrompt || LAURENT_SYSTEM_PROMPT,
+        tools: tools ? [{ functionDeclarations: tools }] : undefined,
       },
     };
 
@@ -123,6 +125,16 @@ export class GeminiLiveClient {
   }
 
   private async handleMessage(message: LiveServerMessage) {
+    // Handle Tool Calls
+    if (message.toolCall && this.onToolCall) {
+        const functionResponses = await this.onToolCall(message.toolCall.functionCalls);
+        if (functionResponses.length > 0 && this.sessionPromise) {
+            this.sessionPromise.then(session => {
+                session.sendToolResponse({ functionResponses });
+            });
+        }
+    }
+
     const base64Audio = message.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
 
     if (base64Audio && this.outputAudioContext) {

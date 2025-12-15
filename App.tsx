@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Dialer from './components/Dialer';
 import CRM from './components/CRM';
 import Auth from './components/Auth';
+import LandingPage from './components/LandingPage';
 import { Lead, CallState, Recording, User, Property, AgentPersona, UserRole, Task } from './types';
 import { geminiClient } from './services/geminiService';
 // vapiService removed - Dialer now embeds app.eburon.ai directly
@@ -51,6 +52,7 @@ const App: React.FC = () => {
   
   // Vapi Monitoring Socket (if applicable, currently placeholder)
   const [monitorWs, setMonitorWs] = useState<WebSocket | null>(null);
+  const [showAuth, setShowAuth] = useState(false);
 
   // Check for existing session on mount
   useEffect(() => {
@@ -334,7 +336,10 @@ const App: React.FC = () => {
 
   // Show Auth component if not authenticated
   if (!currentUser) {
-      return <Auth onLogin={handleLogin} />;
+      if (showAuth) {
+          return <Auth onLogin={handleLogin} />;
+      }
+      return <LandingPage onLoginClick={() => setShowAuth(true)} currentUser={null} />;
   }
 
   // --- MOBILE COMPONENTS ---

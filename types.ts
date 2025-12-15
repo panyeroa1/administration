@@ -29,6 +29,36 @@ export interface Property {
   image: string;
 }
 
+// Added Listing for Landing Page compatibility
+export interface Listing {
+  id: string;
+  name: string;
+  address: string;
+  price: number;
+  imageUrls: string[];
+  energyClass: string;
+  type: 'apartment' | 'house' | 'studio' | 'villa' | 'loft' | 'kot' | 'penthouse' | 'duplex';
+  size: number;
+  description: string;
+  bedrooms: number;
+  petsAllowed: boolean;
+  ownerId?: string; // Link to an owner
+}
+
+export type ApartmentSearchFilters = {
+  city?: string | null;
+  neighborhood?: string | null;
+  minPrice?: number | null;
+  maxPrice?: number | null;
+  minSize?: number | null;
+  maxSize?: number | null;
+  bedrooms?: number | null;
+  petsAllowed?: boolean | null;
+  type?: string | null;
+  energyClassMin?: string | null;
+  sortBy?: "price_asc" | "price_desc" | "size" | "energy_asc" | "energy_desc" | "default" | null;
+};
+
 export enum CallState {
   IDLE = 'IDLE',
   RINGING = 'RINGING',

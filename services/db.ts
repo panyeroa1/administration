@@ -1,11 +1,12 @@
 
 import { supabase } from '../supabaseClient';
-import { Lead, Property, Ticket, User, UserRole, Task, AgentPersona } from '../types';
-import { MOCK_LEADS, MOCK_PROPERTIES, DEFAULT_AGENT_PERSONA } from '../constants';
+import { Lead, Property, Ticket, User, UserRole, Task, AgentPersona, ApartmentSearchFilters, Listing } from '../types';
+import { MOCK_LEADS, MOCK_PROPERTIES, DEFAULT_AGENT_PERSONA, MOCK_LISTINGS } from '../constants';
 
 // MOCK DATA FALLBACKS (In case DB tables don't exist yet)
 let localLeads = [...MOCK_LEADS];
 let localProperties = [...MOCK_PROPERTIES];
+let localListings = [...MOCK_LISTINGS];
 let localAgents = [DEFAULT_AGENT_PERSONA];
 let localTickets: Ticket[] = [
   {
@@ -68,6 +69,15 @@ export const db = {
     }
   },
 
+  async createLead(lead: Lead) {
+      localLeads.push(lead);
+      try {
+          await supabase.from('leads').insert(lead);
+      } catch (e) {
+          console.warn('DB: Create Lead failed, using local state');
+      }
+  },
+
   // --- PROPERTIES ---
   async getProperties(): Promise<Property[]> {
     try {
@@ -77,6 +87,78 @@ export const db = {
     } catch (e) {
       return localProperties;
     }
+  },
+
+  // --- LISTINGS (Landing Page) ---
+  async searchListings(filters: ApartmentSearchFilters): Promise<Listing[]> {
+      try {
+          // Attempt real DB search if 'listings' table exists
+          let query = supabase.from('listings').select('*');
+          
+          if (filters.city) query = query.ilike('address', `%${filters.city}%`);
+          if (filters.minPrice) query = query.gte('price', filters.minPrice);
+          if (filters.maxPrice) query = query.lte('price', filters.maxPrice);
+          if (filters.minSize) query = query.gte('size', filters.minSize);
+          if (filters.bedrooms) query = query.gte('bedrooms', filters.bedrooms);
+          if (filters.type) query = query.eq('type', filters.type);
+          if (filters.petsAllowed !== undefined && filters.petsAllowed !== null) query = query.eq('petsAllowed', filters.petsAllowed);
+
+          const { data, error } = await query;
+          if (error) throw error;
+          if (data && data.length > 0) return data as Listing[];
+          throw new Error("No data or table missing");
+      } catch (e) {
+          // Local Filter Logic
+          console.log("DB: Using local listings filter");
+          let results = localListings;
+          
+          if (filters.city) {
+              results = results.filter(l => l.address.toLowerCase().includes(filters.city!.toLowerCase()));
+          }
+          if (filters.minPrice) results = results.filter(l => l.price >= filters.minPrice!);
+          if (filters.maxPrice) results = results.filter(l => l.price <= filters.maxPrice!);
+          if (filters.minSize) results = results.filter(l => l.size >= filters.minSize!);
+          if (filters.bedrooms) results = results.filter(l => l.bedrooms >= filters.bedrooms!);
+          if (filters.type) results = results.filter(l => l.type === filters.type);
+          if (filters.petsAllowed !== undefined && filters.petsAllowed !== null) {
+               results = results.filter(l => l.petsAllowed === filters.petsAllowed);
+          }
+
+          if (filters.sortBy) {
+              if (filters.sortBy === 'price_asc') results.sort((a, b) => a.price - b.price);
+              if (filters.sortBy === 'price_desc') results.sort((a, b) => b.price - a.price);
+              if (filters.sortBy === 'size') results.sort((a, b) => b.size - a.size);
+          }
+
+          return results;
+      }
+  },
+
+  async createReservation(data: any): Promise<boolean> {
+      try {
+          const { error } = await supabase.from('reservations').insert(data);
+          if (error) throw error;
+          return true;
+      } catch (e) {
+          console.log("DB: Reservation saved locally (mock)");
+          return true;
+      }
+  },
+
+  async saveLeadFromVoice(leadData: Partial<Lead>): Promise<void> {
+      const newLead: Lead = {
+          id: `voice-${Date.now()}`,
+          firstName: leadData.firstName || 'Voice',
+          lastName: leadData.lastName || 'User',
+          phone: leadData.phone || 'Unknown',
+          email: leadData.email || 'unknown@example.com',
+          status: 'New',
+          interest: leadData.interest || 'Renting',
+          lastActivity: 'Voice Search Interaction',
+          notes: leadData.notes || 'Generated from Homie voice search',
+          recordings: []
+      };
+      await this.createLead(newLead);
   },
 
   // --- TICKETS ---
