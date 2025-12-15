@@ -130,7 +130,7 @@ const App: React.FC = () => {
   };
 
   const handleUpdateLead = async (updatedLead: Lead) => {
-    setLeads(prevLeads => prevLeads.map(l => l.id === updatedLead.id ? updatedLead : l));
+    setLeads((prevLeads: Lead[]) => prevLeads.map((l: Lead) => l.id === updatedLead.id ? updatedLead : l));
     if (activeLead && activeLead.id === updatedLead.id) {
         setActiveLead(updatedLead);
     }
@@ -138,7 +138,7 @@ const App: React.FC = () => {
   };
 
   const handleUpdateTask = async (updatedTask: Task) => {
-      setTasks(prev => prev.map(t => t.id === updatedTask.id ? updatedTask : t));
+      setTasks((prev: Task[]) => prev.map((t: Task) => t.id === updatedTask.id ? updatedTask : t));
       await db.updateTask(updatedTask);
   };
 
@@ -165,7 +165,7 @@ const App: React.FC = () => {
   };
 
   const handleSelectAgent = (agentId: string) => {
-      const selected = agents.find(a => a.id === agentId);
+      const selected = agents.find((a: AgentPersona) => a.id === agentId);
       if (selected) {
           setAgentPersona(selected);
       }
@@ -183,8 +183,8 @@ const App: React.FC = () => {
     
     // Don't await the play() promise to avoid blocking the call initiation
     // Catch 'AbortError' specifically which happens if we pause() quickly (e.g. user hangs up)
-    ringAudio.play().catch(e => {
-        if (e.name !== 'AbortError') {
+    ringAudio.play().catch((e: unknown) => {
+        if ((e as any).name !== 'AbortError') {
              console.error("Audio play failed", e);
         }
     });
@@ -233,7 +233,7 @@ const App: React.FC = () => {
     if (ringtoneRef.current) {
         try {
             ringtoneRef.current.pause();
-        } catch (e) { /* ignore */ }
+        } catch (e: unknown) { /* ignore */ }
         ringtoneRef.current = null;
     }
     if (ringTimeoutRef.current) {
@@ -294,7 +294,7 @@ const App: React.FC = () => {
              priority: 'MEDIUM'
          };
          await db.createTask(newTask);
-         setTasks(prev => [...prev, newTask]);
+          setTasks((prev: Task[]) => [...prev, newTask]);
          alert("Follow-up task created automatically for tomorrow.");
      }
 

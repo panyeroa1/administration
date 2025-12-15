@@ -99,7 +99,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, currentUser }) 
         const responses = [];
         for (const fc of toolCalls) {
             if (fc.name === 'updateSearchFilters') {
-                const args = fc.args as any;
+                const args = fc.args as ApartmentSearchFilters;
                 const newFilters = { ...filtersRef.current, ...args };
                 setFilters(newFilters);
                 const results = await loadListings(newFilters);
@@ -110,7 +110,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, currentUser }) 
                 });
                 setAssistantReply(`Found ${results.length} places!`);
             } else if (fc.name === 'saveLeadInfo') {
-                const args = fc.args as any;
+                const args = fc.args as any; // Type as any first for flexibility, but could be specific Record<string, any>
                 await db.saveLeadFromVoice(args);
                 responses.push({
                     id: fc.id,
@@ -290,8 +290,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, currentUser }) 
                 </button>
 
                 <select
+                    aria-label="Sort by"
                     value={filters.sortBy || 'default'}
-                    onChange={(e) => handleFilterChange({ sortBy: e.target.value as any })}
+                    onChange={(e) => handleFilterChange({ sortBy: e.target.value as ApartmentSearchFilters['sortBy'] })}
                     className="text-sm font-medium text-slate-700 bg-transparent py-2 rounded-lg transition-colors border-none outline-none cursor-pointer hover:text-rose-600 ml-auto"
                 >
                     <option value="default">Sort By</option>

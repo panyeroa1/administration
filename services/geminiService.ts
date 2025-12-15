@@ -127,7 +127,7 @@ export class GeminiLiveClient {
   private async handleMessage(message: LiveServerMessage) {
     // Handle Tool Calls
     if (message.toolCall && this.onToolCall) {
-        const functionResponses = await this.onToolCall(message.toolCall.functionCalls);
+        const functionResponses = await this.onToolCall(message.toolCall.functionCalls ?? []);
         if (functionResponses.length > 0 && this.sessionPromise) {
             this.sessionPromise.then(session => {
                 session.sendToolResponse({ functionResponses });

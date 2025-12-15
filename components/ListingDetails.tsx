@@ -92,13 +92,13 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({ listing, currentUser, o
       {/* Lightbox Overlay */}
       {lightboxOpen && (
           <div className="fixed inset-0 z-[60] bg-black flex items-center justify-center animate-in fade-in duration-200" onClick={() => setLightboxOpen(false)}>
-              <button className="absolute top-4 left-4 text-white hover:bg-white/20 p-2 rounded-full z-50" onClick={() => setLightboxOpen(false)}>
+              <button aria-label="Close" className="absolute top-4 left-4 text-white hover:bg-white/20 p-2 rounded-full z-50" onClick={() => setLightboxOpen(false)}>
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
                   </svg>
               </button>
               
-              <button className="absolute left-4 text-white hover:bg-white/20 p-2 rounded-full hidden md:block" onClick={prevPhoto}>
+              <button aria-label="Previous Photo" className="absolute left-4 text-white hover:bg-white/20 p-2 rounded-full hidden md:block" onClick={prevPhoto}>
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-8 h-8">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
                   </svg>
@@ -111,7 +111,7 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({ listing, currentUser, o
                  onClick={(e) => e.stopPropagation()}
               />
               
-              <button className="absolute right-4 text-white hover:bg-white/20 p-2 rounded-full hidden md:block" onClick={nextPhoto}>
+              <button aria-label="Next Photo" className="absolute right-4 text-white hover:bg-white/20 p-2 rounded-full hidden md:block" onClick={nextPhoto}>
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-8 h-8">
                     <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
                   </svg>
@@ -176,7 +176,7 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({ listing, currentUser, o
                         alt="Detail view 2" 
                         className="w-full h-full object-cover group-hover:brightness-95 transition-all"
                     />
-                     <button className="absolute bottom-4 right-4 bg-white border border-slate-900 px-4 py-1.5 rounded-lg text-sm font-semibold shadow-sm hover:scale-105 transition-transform z-10 pointer-events-none">
+                     <button aria-label="Show all photos" className="absolute bottom-4 right-4 bg-white border border-slate-900 px-4 py-1.5 rounded-lg text-sm font-semibold shadow-sm hover:scale-105 transition-transform z-10">
                         Show all photos
                      </button>
                 </div>
@@ -211,7 +211,7 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({ listing, currentUser, o
                               </div>
                               <h3 className="text-xl font-bold text-slate-900 mb-2">Reserved!</h3>
                               <p className="text-center text-slate-500 mb-6">Your request has been sent to the owner.</p>
-                              <button onClick={onClose} className="w-full bg-slate-900 text-white font-bold py-3 rounded-lg hover:bg-slate-800 transition-colors">
+                              <button aria-label="Close" onClick={onClose} className="w-full bg-slate-900 text-white font-bold py-3 rounded-lg hover:bg-slate-800 transition-colors">
                                   Done
                               </button>
                           </div>
@@ -235,6 +235,7 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({ listing, currentUser, o
                                  <p className="text-sm text-slate-500 mb-2">Join Eburon to check availability and reserve this home.</p>
                                  <button 
                                      onClick={onLoginRequest}
+                                     aria-label="Log in to reserve"
                                      className="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-3 rounded-lg transition-colors shadow-md"
                                  >
                                      Log in
@@ -246,27 +247,33 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({ listing, currentUser, o
                                 <div className="border border-gray-400 rounded-lg mb-4 overflow-hidden">
                                     <div className="flex border-b border-gray-400">
                                         <div className="flex-1 p-2 border-r border-gray-400 bg-white">
-                                            <label className="block text-[10px] font-bold uppercase text-slate-800 mb-1">Check-in</label>
+                                            <label htmlFor="check-in-date" className="block text-[10px] font-bold uppercase text-slate-800 mb-1">Check-in</label>
                                             <input 
+                                                id="check-in-date"
                                                 type="date" 
                                                 value={checkIn}
                                                 onChange={e => setCheckIn(e.target.value)}
+                                                aria-label="Check-in date"
                                                 className="w-full text-sm outline-none bg-transparent p-0 text-slate-700"
                                             />
                                         </div>
                                         <div className="flex-1 p-2 bg-white">
-                                            <label className="block text-[10px] font-bold uppercase text-slate-800 mb-1">Check-out</label>
+                                            <label htmlFor="check-out-date" className="block text-[10px] font-bold uppercase text-slate-800 mb-1">Check-out</label>
                                             <input 
+                                                id="check-out-date"
                                                 type="date" 
                                                 value={checkOut}
                                                 onChange={e => setCheckOut(e.target.value)}
+                                                aria-label="Check-out date"
                                                 className="w-full text-sm outline-none bg-transparent p-0 text-slate-700"
                                             />
                                         </div>
                                     </div>
                                     <div className="p-2 bg-white">
-                                        <label className="block text-[10px] font-bold uppercase text-slate-800 mb-1">Guests</label>
+                                        <label htmlFor="guests-select" className="block text-[10px] font-bold uppercase text-slate-800 mb-1">Guests</label>
                                         <select 
+                                            id="guests-select"
+                                            aria-label="Number of guests"
                                             value={guests} 
                                             onChange={e => setGuests(Number(e.target.value))}
                                             className="w-full text-sm outline-none bg-transparent p-0 text-slate-700"
