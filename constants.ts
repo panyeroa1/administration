@@ -123,16 +123,7 @@ export const AVAILABLE_VOICES: VoiceOption[] = [
     { id: 'yoZ06aMxZJJ28mfd3POQ', name: 'Sam', description: 'Raspy, Casual' }
 ];
 
-export const VAPI_AUTH = {
-  publicKey: '02e4643d-2cde-449b-aa39-13bd570b950a',
-  privateKey: process.env.VAPI_PRIVATE_KEY || 'YOUR_VAPI_PRIVATE_KEY_HERE' // User must provide this
-};
-
-export const VAPI_SETTINGS = {
-  assistantId: '73e8708d-d969-4b32-8690-e2b1074ba149',
-  phoneNumberId: process.env.VAPI_PHONE_NUMBER_ID || 'YOUR_VAPI_PHONE_NUMBER_ID', // User must provide this
-  baseUrl: 'https://api.vapi.ai'
-};
+// Vapi configuration removed as per user request (not needed for this project)
 
 export const MOCK_LEADS: Lead[] = [
   {
