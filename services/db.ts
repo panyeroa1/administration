@@ -1,27 +1,18 @@
-
 import { supabase } from '../supabaseClient';
 import { Lead, Property, Ticket, User, UserRole, Task, AgentPersona, ApartmentSearchFilters, Listing } from '../types';
-import { MOCK_LEADS, MOCK_PROPERTIES, DEFAULT_AGENT_PERSONA, MOCK_LISTINGS } from '../constants';
+import { DEFAULT_AGENT_PERSONA } from '../constants';
 
-// MOCK DATA FALLBACKS (In case DB tables don't exist yet)
-
-let localProperties = [...MOCK_PROPERTIES];
-let localListings = [...MOCK_LISTINGS];
-
-
-
+// MOCK DATA FALLBACKS REMOVED - STRICTLY USING DB
 
 export const db = {
   // --- USERS ---
   async getUserProfile(userId: string): Promise<User | null> {
-    try {
       const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
-      if (error || !data) return null;
+      if (error || !data) {
+        console.error('DB: Fetch User Profile Error', error);
+        return null; 
+      }
       return data as User;
-    } catch (e) {
-      console.log('Using local/auth user');
-      return null;
-    }
   },
 
   async createUserProfile(user: User) {
@@ -60,69 +51,61 @@ export const db = {
 
   // --- PROPERTIES ---
   async getProperties(): Promise<Property[]> {
-    try {
       const { data, error } = await supabase.from('properties').select('*');
-      if (error) throw error;
+      if (error) {
+          console.error('DB: Fetch Properties Error', error);
+          return [];
+      }
       return data as Property[];
-    } catch (e) {
-      return localProperties;
-    }
   },
 
   // --- LISTINGS (Landing Page) ---
-  async searchListings(filters: ApartmentSearchFilters): Promise<Listing[]> {
-      try {
-          // Attempt real DB search if 'listings' table exists
-          let query = supabase.from('listings').select('*');
-          
-          if (filters.city) query = query.ilike('address', `%${filters.city}%`);
-          if (filters.minPrice) query = query.gte('price', filters.minPrice);
-          if (filters.maxPrice) query = query.lte('price', filters.maxPrice);
-          if (filters.minSize) query = query.gte('size', filters.minSize);
-          if (filters.bedrooms) query = query.gte('bedrooms', filters.bedrooms);
-          if (filters.type) query = query.eq('type', filters.type);
-          if (filters.petsAllowed !== undefined && filters.petsAllowed !== null) query = query.eq('petsAllowed', filters.petsAllowed);
-
-          const { data, error } = await query;
-          if (error) throw error;
-          if (data && data.length > 0) return data as Listing[];
-          throw new Error("No data or table missing");
-      } catch (e) {
-          // Local Filter Logic
-          console.log("DB: Using local listings filter");
-          let results = localListings;
-          
-          if (filters.city) {
-              results = results.filter(l => l.address.toLowerCase().includes(filters.city!.toLowerCase()));
-          }
-          if (filters.minPrice) results = results.filter(l => l.price >= filters.minPrice!);
-          if (filters.maxPrice) results = results.filter(l => l.price <= filters.maxPrice!);
-          if (filters.minSize) results = results.filter(l => l.size >= filters.minSize!);
-          if (filters.bedrooms) results = results.filter(l => l.bedrooms >= filters.bedrooms!);
-          if (filters.type) results = results.filter(l => l.type === filters.type);
-          if (filters.petsAllowed !== undefined && filters.petsAllowed !== null) {
-               results = results.filter(l => l.petsAllowed === filters.petsAllowed);
-          }
-
-          if (filters.sortBy) {
-              if (filters.sortBy === 'price_asc') results.sort((a, b) => a.price - b.price);
-              if (filters.sortBy === 'price_desc') results.sort((a, b) => b.price - a.price);
-              if (filters.sortBy === 'size') results.sort((a, b) => b.size - a.size);
-          }
-
-          return results;
+  async createListing(listing: Listing): Promise<void> {
+      const { error } = await supabase.from('listings').insert(listing);
+      if (error) {
+          console.error('DB: Create Listing Error', error);
+          throw error;
       }
+      // Also sync to 'properties' for the CRM view if needed, or assume they are separate. 
+      // For now, let's create a property entry too so it shows up in CRM.
+      const propertyCtx: Property = {
+          id: listing.id,
+          address: listing.address,
+          price: `€ ${listing.price}`,
+          type: listing.type,
+          status: 'Active',
+          image: listing.imageUrls?.[0] || ''
+      };
+      await supabase.from('properties').insert(propertyCtx);
+  },
+
+  async searchListings(filters: ApartmentSearchFilters): Promise<Listing[]> {
+      // Attempt real DB search
+      let query = supabase.from('listings').select('*');
+      
+      if (filters.city) query = query.ilike('address', `%${filters.city}%`);
+      if (filters.minPrice) query = query.gte('price', filters.minPrice);
+      if (filters.maxPrice) query = query.lte('price', filters.maxPrice);
+      if (filters.minSize) query = query.gte('size', filters.minSize);
+      if (filters.bedrooms) query = query.gte('bedrooms', filters.bedrooms);
+      if (filters.type) query = query.eq('type', filters.type);
+      if (filters.petsAllowed !== undefined && filters.petsAllowed !== null) query = query.eq('petsAllowed', filters.petsAllowed);
+
+      const { data, error } = await query;
+      if (error) {
+          console.error('DB: Fetch Listings Error', error);
+          return [];
+      }
+      return (data || []) as Listing[];
   },
 
   async createReservation(data: any): Promise<boolean> {
-      try {
-          const { error } = await supabase.from('reservations').insert(data);
-          if (error) throw error;
-          return true;
-      } catch (e) {
-          console.log("DB: Reservation saved locally (mock)");
-          return true;
+      const { error } = await supabase.from('reservations').insert(data);
+      if (error) {
+          console.error('DB: Reservation failed', error);
+          return false;
       }
+      return true;
   },
 
   async saveLeadFromVoice(leadData: Partial<Lead>): Promise<void> {
@@ -143,7 +126,7 @@ export const db = {
 
   // --- TICKETS ---
   async getTickets(): Promise<Ticket[]> {
-    const { data, error } = await supabase.from('tickets').select('*').order('created_at', { ascending: false });
+    const { data, error } = await supabase.from('tickets').select('*').order('createdAt', { ascending: false });
     if (error) {
         console.error('DB: Fetch Tickets Error', error);
         return [];
@@ -169,7 +152,7 @@ export const db = {
 
   // --- TASKS ---
   async getTasks(): Promise<Task[]> {
-      const { data, error } = await supabase.from('tasks').select('*').order('due_date', { ascending: true });
+      const { data, error } = await supabase.from('tasks').select('*').order('dueDate', { ascending: true });
       if(error) {
           console.error('DB: Fetch Tasks Error', error);
           return [];
@@ -208,6 +191,15 @@ export const db = {
       if (error) {
           console.error('DB: Agent save failed', error);
           throw error;
+      }
+  },
+
+  // --- INTERACTIONS ---
+  async createInteraction(interaction: any) {
+      const { error } = await supabase.from('interactions').insert(interaction);
+      if (error) {
+          console.error('DB: Create Interaction Error', error);
+          // Don't throw, just log, so we don't break the UI flow
       }
   }
 };

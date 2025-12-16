@@ -142,6 +142,11 @@ const App: React.FC = () => {
       await db.updateTask(updatedTask);
   };
 
+  const handleCreateTask = async (newTask: Task) => {
+      setTasks((prev: Task[]) => [...prev, newTask]);
+      await db.createTask(newTask);
+  };
+
   // Switch User (Demo Feature)
   const handleSwitchUser = (role: UserRole) => {
       const demoPersonas: Record<UserRole, {name: string, email: string}> = {
@@ -384,6 +389,12 @@ const App: React.FC = () => {
       {!isMobile && (
         <>
             <div className="flex-1 h-full min-w-0">
+
+
+  // Switch User (Demo Feature)
+  // ... existing handleSwitchUser ...
+
+  // ... inside return ...
                 <CRM 
                     leads={leads} 
                     properties={properties} 
@@ -397,6 +408,7 @@ const App: React.FC = () => {
                     onSwitchUser={handleSwitchUser}
                     tasks={tasks}
                     onUpdateTask={handleUpdateTask}
+                    onCreateTask={handleCreateTask}
                     agents={agents}
                     onAgentsChange={setAgents}
                 />

@@ -125,213 +125,39 @@ export const AVAILABLE_VOICES: VoiceOption[] = [
 
 // Vapi configuration removed as per user request (not needed for this project)
 
-export const MOCK_LEADS: Lead[] = [
-  {
-    id: '1',
-    firstName: 'Sophie',
-    lastName: 'Dubois',
-    phone: '+32 477 12 34 56',
-    email: 'sophie.d@example.com',
-    status: 'New',
-    interest: 'Buying',
-    lastActivity: 'Web Form: "Search for 2BR Apartment"',
-    notes: 'Looking in Ghent area, budget ~350k.',
-    recordings: []
-  },
-  {
-    id: '2',
-    firstName: 'Marc',
-    lastName: 'Peeters',
-    phone: '+32 486 98 76 54',
-    email: 'm.peeters@telenet.be',
-    status: 'Qualified',
-    interest: 'Selling',
-    lastActivity: 'Downloaded Seller Guide',
-    notes: 'Owns a villa in Brasschaat. Thinking of downsizing.',
-    recordings: []
-  },
-  {
-    id: '3',
-    firstName: 'Elise',
-    lastName: 'Van Damme',
-    phone: '+32 499 11 22 33',
-    email: 'elise.vd@gmail.com',
-    status: 'Contacted',
-    interest: 'Renting',
-    lastActivity: 'Viewed Listing #402',
-    notes: 'Needs to move by next month.',
-    recordings: []
-  },
-  {
-    id: '4',
-    firstName: 'Thomas',
-    lastName: 'Maes',
-    phone: '+32 472 55 66 77',
-    email: 'thomas.maes@outlook.com',
-    status: 'New',
-    interest: 'Management',
-    lastActivity: 'Form: Property Management Inquiry',
-    notes: 'Inherited an apartment in Brussels, lives abroad.',
-    recordings: []
-  },
-];
+// Mock data removed as we are now using Supabase
+// Mock data removed for entities using Supabase (Leads, Properties, Listings)
+export const MOCK_LEADS: Lead[] = [];
+export const MOCK_PROPERTIES: Property[] = [];
+export const MOCK_LISTINGS: Listing[] = [];
 
-export const MOCK_PROPERTIES: Property[] = [
-  {
-    id: '101',
-    address: 'Kouter 12, 9000 Gent',
-    price: '€ 450,000',
-    type: 'Apartment',
-    status: 'Active',
-    image: 'https://picsum.photos/400/300?random=1'
-  },
-  {
-    id: '102',
-    address: 'Meir 24, 2000 Antwerpen',
-    price: '€ 1,200 / mo',
-    type: 'Commercial',
-    status: 'Active',
-    image: 'https://picsum.photos/400/300?random=2'
-  },
-  {
-    id: '103',
-    address: 'Louise Avenue 200, 1050 Brussels',
-    price: '€ 890,000',
-    type: 'Penthouse',
-    status: 'Pending',
-    image: 'https://picsum.photos/400/300?random=3'
-  }
-];
-
-export const MOCK_LISTINGS: Listing[] = [
-    {
-        id: '1',
-        name: 'Modern Loft in Ghent Center',
-        address: 'Kouter 12, 9000 Gent',
-        price: 1200,
-        imageUrls: ['https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'],
-        energyClass: 'A',
-        type: 'loft',
-        size: 95,
-        description: 'Beautiful modern loft with high ceilings and plenty of natural light. Located in the heart of Ghent.',
-        bedrooms: 1,
-        petsAllowed: true,
-        ownerId: 'u1'
-    },
-    {
-        id: '2',
-        name: 'Cozy Studio near Station',
-        address: 'Koningin Astridlaan 45, 9000 Gent',
-        price: 750,
-        imageUrls: ['https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'],
-        energyClass: 'B',
-        type: 'studio',
-        size: 40,
-        description: 'Compact but fully equipped studio. Perfect for students or young professionals.',
-        bedrooms: 0,
-        petsAllowed: false
-    },
-    {
-        id: '3',
-        name: 'Luxury Apartment with View',
-        address: 'Korenlei 8, 9000 Gent',
-        price: 1800,
-        imageUrls: ['https://images.unsplash.com/photo-1512918760532-3edbed72481b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'],
-        energyClass: 'A+',
-        type: 'apartment',
-        size: 120,
-        description: 'Stunning views over the Leie river. High-end finishing and spacious terrace.',
-        bedrooms: 2,
-        petsAllowed: true
-    },
-    {
-        id: '4',
-        name: 'Family House in Green Area',
-        address: 'Parklaan 15, 9050 Gentbrugge',
-        price: 1450,
-        imageUrls: ['https://images.unsplash.com/photo-1568605114967-8130f3a36994?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'],
-        energyClass: 'C',
-        type: 'house',
-        size: 160,
-        description: 'Spacious family home with a large garden. Quiet neighborhood near parks.',
-        bedrooms: 3,
-        petsAllowed: true
-    },
-    {
-        id: '5',
-        name: 'Penthouse with Skyline View',
-        address: 'Frankrijklei 100, 2000 Antwerpen',
-        price: 2500,
-        imageUrls: ['https://images.unsplash.com/photo-1512915922686-57c11dde9b6b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'],
-        energyClass: 'B',
-        type: 'penthouse',
-        size: 180,
-        description: 'Exclusive penthouse with private elevator and rooftop terrace.',
-        bedrooms: 3,
-        petsAllowed: false
-    },
-    {
-        id: '6',
-        name: 'Student Room (Kot)',
-        address: 'Overpoortstraat 5, 9000 Gent',
-        price: 450,
-        imageUrls: ['https://images.unsplash.com/photo-1555854877-bab0e564b8d5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'],
-        energyClass: 'D',
-        type: 'kot',
-        size: 15,
-        description: 'Standard student room with shared kitchen and bathroom. lively area.',
-        bedrooms: 1,
-        petsAllowed: false
-    }
-];
-
-export const MOCK_NOTIFICATIONS: Record<string, Notification[]> = {
-  BROKER: [
-    { id: '1', title: 'New Lead', message: 'Sophie Dubois submitted a contact form.', time: '10m ago', read: false, type: 'info' },
-    { id: '2', title: 'Contract Signed', message: 'Lease agreement signed for Kouter 12.', time: '2h ago', read: true, type: 'success' },
-    { id: '3', title: 'SLA Warning', message: 'Maintenance request #4092 is overdue.', time: '5h ago', read: false, type: 'alert' }
-  ],
-  OWNER: [
-    { id: '1', title: 'Rent Received', message: 'Tenant at Meir 24 paid September rent.', time: '1h ago', read: false, type: 'success' },
-    { id: '2', title: 'Approval Needed', message: 'Plumbing repair quote ($240) requires approval.', time: '1d ago', read: false, type: 'alert' }
-  ],
-  RENTER: [
-    { id: '1', title: 'Request Update', message: 'Your maintenance request #4092 has been scheduled.', time: '30m ago', read: false, type: 'success' },
-    { id: '2', title: 'Building Notice', message: 'Water shutoff scheduled for Tuesday 9AM-11AM.', time: '2d ago', read: true, type: 'info' }
-  ],
-  CONTRACTOR: [
-    { id: '1', title: 'New Job Assigned', message: 'Leaking faucet at Louise Ave 200.', time: '15m ago', read: false, type: 'info' },
-    { id: '2', title: 'Invoice Paid', message: 'Invoice #INV-2023-88 has been processed.', time: '3h ago', read: true, type: 'success' }
-  ]
+// Keep mocks for entities NOT yet in Supabase to keep UI functional
+export const MOCK_NOTIFICATIONS: Record<string, Notification[]> = { 
+    BROKER: [
+        { id: '1', title: 'New Lead: Sophie Dubois', message: 'Inquired about Ghent Loft', time: '10 min ago', type: 'message', read: false },
+        { id: '2', title: 'Viewing Confirmed', message: 'Tomorrow 14:00 - Korenlei 8', time: '1 hour ago', type: 'calendar', read: false },
+        { id: '3', title: 'Contract Signed', message: 'Lease agreement #4492', time: '2 hours ago', type: 'alert', read: true }
+    ], 
+    OWNER: [], 
+    RENTER: [], 
+    CONTRACTOR: [] 
 };
 
 export const MOCK_DOCUMENTS: Document[] = [
-  // Contracts
-  { id: '1', name: 'Lease_Agreement_Kouter12.pdf', type: 'PDF', size: '2.4 MB', date: '2023-09-01', category: 'Contracts', sharedWith: ['BROKER', 'OWNER', 'RENTER'] },
-  { id: '2', name: 'Management_Contract_Meir24.pdf', type: 'PDF', size: '1.8 MB', date: '2023-08-15', category: 'Contracts', sharedWith: ['BROKER', 'OWNER'] },
-  
-  // Invoices
-  { id: '3', name: 'Invoice_Plumbing_Repair_#402.pdf', type: 'PDF', size: '0.5 MB', date: '2023-09-10', category: 'Invoices', sharedWith: ['BROKER', 'OWNER', 'CONTRACTOR'] },
-  { id: '4', name: 'Commission_Statement_Q3.xls', type: 'XLS', size: '0.8 MB', date: '2023-09-30', category: 'Invoices', sharedWith: ['BROKER'] },
-
-  // Plans
-  { id: '5', name: 'Floorplan_Louise_Penthouse.img', type: 'IMG', size: '4.2 MB', date: '2023-07-20', category: 'Plans', sharedWith: ['BROKER', 'OWNER', 'CONTRACTOR'] },
-  
-  // Reports
-  { id: '6', name: 'Monthly_Revenue_Report_Aug.pdf', type: 'PDF', size: '1.2 MB', date: '2023-09-02', category: 'Reports', sharedWith: ['BROKER', 'OWNER'] },
-  { id: '7', name: 'Inspection_Checklist.doc', type: 'DOC', size: '0.3 MB', date: '2023-09-05', category: 'Reports', sharedWith: ['BROKER', 'CONTRACTOR'] },
+    { id: '1', name: 'Lease_Agreement_Template.pdf', type: 'PDF', size: '2.4 MB', uploadedBy: 'Admin', date: '2023-10-01' },
+    { id: '2', name: 'Property_Checklist_v2.docx', type: 'DOCX', size: '1.1 MB', uploadedBy: 'David', date: '2023-10-05' },
+    { id: '3', name: 'Invoice_October_2023.pdf', type: 'PDF', size: '0.8 MB', uploadedBy: 'Finance', date: '2023-10-30' }
 ];
 
 export const MOCK_EMAILS: Email[] = [
-  { id: '1', from: 'Sophie Dubois', subject: 'Re: Viewing Appointment', preview: 'Hi Laurent, Tuesday at 2 PM works perfectly for me. See you there!', date: '10:42 AM', read: false, source: 'EMAIL' },
-  { id: '2', from: '+32 486 98 76 54', subject: 'Marc Peeters', preview: 'Hey Laurent, kan je mij die documenten nog eens doorsturen? Bedankt.', date: 'Yesterday', read: true, source: 'WHATSAPP' },
-  { id: '3', from: 'ImmoWeb Leads', subject: 'New Lead: Apartment Ghent', preview: 'You have received a new inquiry from ImmoWeb for property ref #101...', date: 'Yesterday', read: true, source: 'EMAIL' },
+    { id: '1', from: 'sophie.d@example.com', subject: 'Question about the loft', preview: 'Hi, is the loft still available for visiting this weekend?', time: '10:42 AM', read: false },
+    { id: '2', from: 'm.peeters@telenet.be', subject: 'Selling my villa', preview: 'I would like to discuss the valuation of my property...', time: 'Yesterday', read: true }
 ];
 
 export const MOCK_CAMPAIGNS: Campaign[] = [
-  { id: '1', name: 'Ghent Apartments - Q3', platform: 'Facebook', status: 'Active', clicks: 1240, spend: '€450' },
-  { id: '2', name: 'Luxury Penthouses Brussels', platform: 'Instagram', status: 'Active', clicks: 856, spend: '€620' },
-  { id: '3', name: 'Search Ads - "Broker Antwerp"', platform: 'Google', status: 'Paused', clicks: 210, spend: '€150' },
+    { id: '1', name: 'Winter Warmth Promo', status: 'Active', sent: 1250, openRate: 45, clickRate: 12 },
+    { id: '2', name: 'Student Housing Blast', status: 'Draft', sent: 0, openRate: 0, clickRate: 0 },
+    { id: '3', name: 'New Listings Alert', status: 'Completed', sent: 3400, openRate: 38, clickRate: 8 }
 ];
 
 export const PREDEFINED_AGENTS: Record<string, AgentPersona> = {

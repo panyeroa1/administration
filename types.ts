@@ -18,6 +18,7 @@ export interface Lead {
   lastActivity: string;
   notes: string;
   recordings: Recording[];
+  created_at?: string; // DB timestamp
 }
 
 export interface Property {
@@ -43,6 +44,7 @@ export interface Listing {
   bedrooms: number;
   petsAllowed: boolean;
   ownerId?: string; // Link to an owner
+  created_at?: string; // DB timestamp
 }
 
 export type ApartmentSearchFilters = {
@@ -89,7 +91,7 @@ export interface Notification {
   message: string;
   time: string;
   read: boolean;
-  type: 'alert' | 'info' | 'success';
+  type: 'alert' | 'info' | 'success' | 'message' | 'calendar';
 }
 
 export interface Ticket {
@@ -127,11 +129,12 @@ export interface Message {
 export interface Document {
   id: string;
   name: string;
-  type: 'PDF' | 'DOC' | 'IMG' | 'XLS';
+  type: 'PDF' | 'DOC' | 'IMG' | 'XLS' | 'DOCX';
   size: string;
   date: string;
-  category: 'Contracts' | 'Invoices' | 'Reports' | 'Plans';
-  sharedWith: UserRole[]; // Roles that can see this doc
+  category?: 'Contracts' | 'Invoices' | 'Reports' | 'Plans';
+  sharedWith?: UserRole[]; // Roles that can see this doc
+  uploadedBy?: string;
 }
 
 export interface AgentPersona {
@@ -154,18 +157,22 @@ export interface Email {
   from: string;
   subject: string;
   preview: string;
-  date: string;
+  date?: string;
+  time?: string;
   read: boolean;
-  source: 'EMAIL' | 'WHATSAPP';
+  source?: 'EMAIL' | 'WHATSAPP';
 }
 
 export interface Campaign {
   id: string;
   name: string;
-  platform: 'Facebook' | 'Instagram' | 'Google';
-  status: 'Active' | 'Paused';
-  clicks: number;
-  spend: string;
+  platform?: 'Facebook' | 'Instagram' | 'Google';
+  status: 'Active' | 'Paused' | 'Draft' | 'Completed';
+  clicks?: number;
+  spend?: string;
+  sent?: number;
+  openRate?: number;
+  clickRate?: number;
 }
 
 export interface Task {
@@ -198,4 +205,14 @@ export interface VoiceOption {
   id: string;
   name: string;
   description: string;
+}
+
+export interface Interaction {
+  id?: string;
+  type: 'VOICE_CALL' | 'SMS' | 'EMAIL';
+  direction: 'INBOUND' | 'OUTBOUND';
+  leadId?: string;
+  content: string;
+  metadata?: any;
+  timestamp: string;
 }
