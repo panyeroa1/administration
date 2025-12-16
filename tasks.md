@@ -139,3 +139,61 @@ How it was tested:
 
 Test result:
 - PASS: Credentials secured and unused Vapi code removed.
+
+------------------------------------------------------------
+STANDARD TASK BLOCK
+------------------------------------------------------------
+
+Task ID: T-0003
+Title: Create ADMIN.md with Architecture Overview and Production Roadmap
+Status: IN-PROGRESS
+Owner: Miles
+Related repo or service: esrealagent
+Branch: development
+Created: 2025-12-16 22:35
+Last updated: 2025-12-16 22:35
+
+START LOG
+
+Timestamp: 2025-12-16 22:35
+Current behavior or state:
+- No centralized documentation for the system architecture or production roadmap.
+- Developer needs a "from scratch" guide and a checklist for production readiness.
+
+Plan and scope for this task:
+- Create 'ADMIN.md'.
+- Document the overall systems architecture and database schema.
+- Define the project goals.
+- Create a detailed TODO list for production readiness (Data, Functions, Security).
+
+Files or modules expected to change:
+- ADMIN.md (new)
+- tasks.md
+
+Risks or things to watch out for:
+- Ensure the schema description matches the 'schema.sql' I just created while also proposing necessary future improvements.
+
+END LOG
+
+Timestamp: 2025-12-16 22:40
+Summary of what actually changed:
+- Created 'ADMIN.md' containing:
+  - System Overview & Goals.
+  - Architecture Diagram (Mermaid).
+  - Database Schema Blueprint.
+  - Detailed Production-Ready TODO list covering Data, Security, Functions, and Client Features.
+
+Files actually modified:
+- ADMIN.md
+- tasks.md
+
+How it was tested:
+- Reviewed 'ADMIN.md' content for clarity, completeness, and alignment with project goals.
+- Verified 'tasks.md' update.
+
+Test result:
+- PASS: Documentation created successfully.
+
+Known limitations or follow-up tasks:
+- The TODO list in 'ADMIN.md' requires execution.
+- The schema blueprint needs to be fully validated against the actual implementation as it evolves.
