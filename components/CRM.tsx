@@ -1,16 +1,15 @@
 
 import React, { useState, useEffect } from 'react';
 import { Lead, Property, User, Ticket, Invoice, AgentPersona, UserRole, Document, Task } from '../types';
-import { MOCK_NOTIFICATIONS, MOCK_DOCUMENTS, MOCK_EMAILS, MOCK_CAMPAIGNS, AVAILABLE_VOICES, DEFAULT_AGENT_PERSONA } from '../constants';
+import { MOCK_NOTIFICATIONS, AVAILABLE_VOICES, DEFAULT_AGENT_PERSONA } from '../constants';
 import { db } from '../services/db';
-import { 
-  User as UserIcon, Phone, Mail, Clock, MapPin, DollarSign, Home, CheckCircle, 
-  ChevronRight, Search, Play, Pause, X, Send, PhoneIncoming, 
-  PhoneMissed, Voicemail, LayoutDashboard, Calendar as CalendarIcon, FileText, 
-  PieChart, Settings, Inbox as InboxIcon, Briefcase, Megaphone, Receipt,
+import {
+  User as UserIcon, Phone, Mail, Clock, MapPin, DollarSign, Home, CheckCircle,
+  ChevronRight, Search, Play, Pause, X, Send, PhoneIncoming,
+  PhoneMissed, Voicemail, LayoutDashboard, Calendar as CalendarIcon, FileText,
+  Settings, Inbox as InboxIcon, Briefcase,
   Menu, ChevronLeft, ChevronDown, Wrench, HardHat, Bell, LogOut, Shield,
-  Plus, Filter, Download, ArrowUpRight, ArrowDownLeft, AlertCircle, File, Image as ImageIcon,
-  MessageSquare, BarChart3, Target, Bot, Users, CheckSquare, CalendarDays, Mic, Save
+  Plus, Filter, AlertCircle, Bot, Users, CheckSquare, CalendarDays
 } from 'lucide-react';
 import LeadForm from './LeadForm';
 import TicketForm from './TicketForm';
