@@ -10,7 +10,7 @@ import { geminiClient } from './services/geminiService';
 import { Download, Save, Trash2, X, AlertCircle, Loader2, Phone, LayoutDashboard, User as UserIcon, Settings, Menu } from 'lucide-react';
 import { db } from './services/db';
 import { DEFAULT_AGENT_PERSONA, generateSystemPrompt } from './constants';
-import { supabase } from './supabaseClient';
+import { supabase, isConfigured } from './supabaseClient';
 
 interface PendingRec {
   url: string;
@@ -19,6 +19,29 @@ interface PendingRec {
 }
 
 const App: React.FC = () => {
+  if (!isConfigured) {
+    return (
+        <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
+            <div className="bg-white p-8 rounded-xl shadow-lg max-w-md w-full border border-red-100">
+                <div className="flex items-center gap-3 mb-4 text-red-600">
+                    <AlertCircle className="w-8 h-8" />
+                    <h1 className="text-xl font-bold">Configuration Missing</h1>
+                </div>
+                <p className="text-slate-600 mb-6">
+                    The application cannot start because the Supabase configuration is missing.
+                </p>
+                <div className="bg-slate-100 p-4 rounded-lg font-mono text-sm text-slate-700 mb-6 overflow-x-auto">
+                    VITE_SUPABASE_URL<br/>
+                    VITE_SUPABASE_ANON_KEY
+                </div>
+                <p className="text-sm text-slate-500">
+                    Please add these variables to your <code>.env</code> file (locally) or Vercel Project Settings (production).
+                </p>
+            </div>
+        </div>
+    );
+  }
+
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isCheckingSession, setIsCheckingSession] = useState(true);
   const [activeLead, setActiveLead] = useState<Lead | null>(null);
