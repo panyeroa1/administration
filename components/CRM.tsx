@@ -1,28 +1,5 @@
 
-// ... imports
-import ListingForm from './ListingForm'; 
-
-// ... inside CRM component
-const [showListingForm, setShowListingForm] = useState(false);
-
-// ... handleAddProperty
-  const handleAddProperty = () => {
-      setShowListingForm(true);
-  };
- 
-// ... render logic (at the end, before closing div)
-      {showListingForm && (
-        <ListingForm 
-            onClose={() => setShowListingForm(false)} 
-            onSuccess={() => {
-                // Trigger refresh if possible, or just close. 
-                // ideally reload properties.
-                // For now just close, user can refresh manually or we trigger a callback if we had one.
-                setShowListingForm(false);
-                alert("Property saved!"); 
-            }} 
-        />
-      )}
+import React, { useState, useEffect } from 'react';
 import { Lead, Property, User, Ticket, Invoice, AgentPersona, UserRole, Document, Task } from '../types';
 import { MOCK_NOTIFICATIONS, MOCK_DOCUMENTS, MOCK_EMAILS, MOCK_CAMPAIGNS, AVAILABLE_VOICES, DEFAULT_AGENT_PERSONA } from '../constants';
 import { db } from '../services/db';
@@ -67,10 +44,22 @@ const CRM: React.FC<CRMProps> = ({
   const [noteInput, setNoteInput] = useState('');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [showLeadForm, setShowLeadForm] = useState(false);
+  const [showListingForm, setShowListingForm] = useState(false);
+  const [showTicketForm, setShowTicketForm] = useState(false);
+  const [showDocumentForm, setShowDocumentForm] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [documents, setDocuments] = useState<Document[]>(MOCK_DOCUMENTS);
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [filterTicketStatus, setFilterTicketStatus] = useState<'ALL' | 'OPEN' | 'SCHEDULED' | 'COMPLETED'>('ALL');
+  const [newDocument, setNewDocument] = useState<Partial<Document>>({
+      name: '',
+      category: 'Contracts',
+      type: 'PDF',
+      size: '',
+      date: new Date().toISOString().split('T')[0],
+      sharedWith: ['BROKER']
+  });
   
   // Calendar State
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -123,6 +112,10 @@ const CRM: React.FC<CRMProps> = ({
       if (name) alert(`Campaign "${name}" created! (Mock)`);
   };
 
+  const handleCreateTicket = () => {
+      setShowTicketForm(true);
+  };
+
 
 
 
@@ -131,7 +124,7 @@ const CRM: React.FC<CRMProps> = ({
   };
 
   const handleUploadDocument = () => {
-      alert("Upload Document feature coming soon!");
+      setShowDocumentForm(true);
   };
 
   const handleGenerateInvoice = () => {
@@ -159,9 +152,38 @@ const CRM: React.FC<CRMProps> = ({
       }
   };
 
-  // The handleAddProperty function is already defined at the top of the component
-  // and correctly sets setShowListingForm(true). This duplicate definition
-  // with an alert is being removed as per the instruction.
+  const handleAddProperty = () => {
+      setShowListingForm(true);
+  };
+
+  const refreshTickets = async () => {
+      const t = await db.getTickets();
+      setTickets(t);
+  };
+
+  const handleDocumentSubmit = (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!newDocument.name) return;
+      const doc: Document = {
+          id: crypto.randomUUID(),
+          name: newDocument.name || 'Untitled',
+          category: (newDocument as Document).category || 'Contracts',
+          type: (newDocument as Document).type || 'PDF',
+          size: newDocument.size || 'N/A',
+          date: newDocument.date || new Date().toISOString().split('T')[0],
+          sharedWith: newDocument.sharedWith || ['BROKER']
+      };
+      setDocuments(prev => [doc, ...prev]);
+      setNewDocument({
+          name: '',
+          category: 'Contracts',
+          type: 'PDF',
+          size: '',
+          date: new Date().toISOString().split('T')[0],
+          sharedWith: ['BROKER']
+      });
+      setShowDocumentForm(false);
+  };
 
 
   const NavItem = ({ id, label, icon: Icon, badge }: { id: TabType, label: string, icon: any, badge?: string }) => (
