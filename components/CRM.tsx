@@ -47,7 +47,7 @@ const CRM: React.FC<CRMProps> = ({
   const [showTicketForm, setShowTicketForm] = useState(false);
   const [showDocumentForm, setShowDocumentForm] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [documents, setDocuments] = useState<Document[]>(MOCK_DOCUMENTS);
+  const [documents, setDocuments] = useState<Document[]>([]);
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [filterTicketStatus, setFilterTicketStatus] = useState<'ALL' | 'OPEN' | 'SCHEDULED' | 'COMPLETED'>('ALL');
@@ -482,7 +482,7 @@ const CRM: React.FC<CRMProps> = ({
                        <input type="text" placeholder="Search messages..." className="w-full px-4 py-2 bg-slate-50 rounded-lg text-sm outline-none focus:ring-2 focus:ring-slate-900 500/50"/>
                    </div>
                    <div className="overflow-y-auto flex-1">
-                       {MOCK_EMAILS.map(email => (
+                       {[].map((email: any) => (
                            <div key={email.id} className={`p-4 border-b border-slate-50 hover:bg-slate-50 cursor-pointer transition-colors ${!email.read ? 'bg-black 50/30' : ''}`}>
                                <div className="flex justify-between items-start mb-1">
                                    <div className="flex items-center gap-2">
@@ -522,7 +522,7 @@ const CRM: React.FC<CRMProps> = ({
                 </button>
            </div>
            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-               {MOCK_CAMPAIGNS.map(camp => (
+               {[].map((camp: any) => (
                    <div key={camp.id} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
                        <div className="flex justify-between items-start mb-4">
                            <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${
@@ -748,7 +748,7 @@ const CRM: React.FC<CRMProps> = ({
                           </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100">
-                          {MOCK_DOCUMENTS.map(doc => (
+                          {documents.map(doc => (
                               <tr key={doc.id} className="hover:bg-slate-50 transition-colors">
                                   <td className="px-6 py-4">
                                       <div className="flex items-center gap-3">
