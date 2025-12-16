@@ -4,26 +4,12 @@ import { Lead, Property, Ticket, User, UserRole, Task, AgentPersona, ApartmentSe
 import { MOCK_LEADS, MOCK_PROPERTIES, DEFAULT_AGENT_PERSONA, MOCK_LISTINGS } from '../constants';
 
 // MOCK DATA FALLBACKS (In case DB tables don't exist yet)
-let localLeads = [...MOCK_LEADS];
+
 let localProperties = [...MOCK_PROPERTIES];
 let localListings = [...MOCK_LISTINGS];
-let localAgents = [DEFAULT_AGENT_PERSONA];
-let localTickets: Ticket[] = [
-  {
-    id: 't1', title: 'Leaking Faucet', description: 'Kitchen sink dripping constantly.', 
-    status: 'OPEN', priority: 'MEDIUM', propertyId: '101', propertyAddress: 'Kouter 12, 9000 Gent', 
-    createdBy: 'u1', createdAt: new Date().toISOString()
-  },
-  {
-    id: 't2', title: 'Heating Failure', description: 'No heating in living room.', 
-    status: 'SCHEDULED', priority: 'HIGH', propertyId: '102', propertyAddress: 'Meir 24, 2000 Antwerpen', 
-    createdBy: 'u2', createdAt: new Date(Date.now() - 86400000).toISOString(), assignedTo: 'c1'
-  }
-];
-let localTasks: Task[] = [
-    { id: 'tk1', title: 'Prepare Contract for Sophie', dueDate: new Date(Date.now() + 86400000).toISOString(), completed: false, leadId: '1', leadName: 'Sophie Dubois', priority: 'HIGH' },
-    { id: 'tk2', title: 'Follow up on inspection', dueDate: new Date(Date.now() + 172800000).toISOString(), completed: false, priority: 'MEDIUM' }
-];
+
+
+
 
 export const db = {
   // --- USERS ---
@@ -39,42 +25,36 @@ export const db = {
   },
 
   async createUserProfile(user: User) {
-    try {
-      await supabase.from('profiles').upsert(user);
-    } catch (e) {
-      console.log('DB: Profile creation failed (tables likely missing), proceeding in-memory');
+    const { error } = await supabase.from('profiles').upsert(user);
+    if (error) {
+        console.error('DB: Profile creation failed', error);
+        throw error;
     }
   },
 
   // --- LEADS ---
   async getLeads(): Promise<Lead[]> {
-    try {
-      const { data, error } = await supabase.from('leads').select('*');
-      if (error) throw error;
-      return data as Lead[];
-    } catch (e) {
-      return localLeads;
+    const { data, error } = await supabase.from('leads').select('*').order('created_at', { ascending: false });
+    if (error) {
+        console.error('DB: Fetch Leads Error', error);
+        return [];
     }
+    return data as Lead[];
   },
 
   async updateLead(lead: Lead) {
-    try {
-      // Optimistic local update
-      localLeads = localLeads.map(l => l.id === lead.id ? lead : l);
-      
       const { error } = await supabase.from('leads').upsert(lead);
-      if (error) throw error;
-    } catch (e) {
-      console.warn('DB: Update Lead failed, using local state');
-    }
+      if (error) {
+          console.error('DB: Update Lead Error', error);
+          throw error;
+      }
   },
 
   async createLead(lead: Lead) {
-      localLeads.push(lead);
-      try {
-          await supabase.from('leads').insert(lead);
-      } catch (e) {
-          console.warn('DB: Create Lead failed, using local state');
+      const { error } = await supabase.from('leads').insert(lead);
+      if (error) {
+          console.error('DB: Create Lead Error', error);
+          throw error;
       }
   },
 
@@ -163,81 +143,71 @@ export const db = {
 
   // --- TICKETS ---
   async getTickets(): Promise<Ticket[]> {
-    try {
-      const { data, error } = await supabase.from('tickets').select('*');
-      if (error) throw error;
-      return data as Ticket[];
-    } catch (e) {
-      return localTickets;
+    const { data, error } = await supabase.from('tickets').select('*').order('created_at', { ascending: false });
+    if (error) {
+        console.error('DB: Fetch Tickets Error', error);
+        return [];
     }
+    return data as Ticket[];
   },
 
   async updateTicket(ticket: Ticket) {
-    try {
-       localTickets = localTickets.map(t => t.id === ticket.id ? ticket : t);
-       await supabase.from('tickets').upsert(ticket);
-    } catch (e) {
-       console.warn('DB: Update Ticket failed, using local state');
-    }
+     const { error } = await supabase.from('tickets').upsert(ticket);
+     if(error) {
+         console.error('DB: Update Ticket Error', error);
+         throw error;
+     }
   },
 
   async createTicket(ticket: Ticket) {
-      localTickets.push(ticket);
-      try {
-          await supabase.from('tickets').insert(ticket);
-      } catch (e) {}
+      const { error } = await supabase.from('tickets').insert(ticket);
+      if(error) {
+          console.error('DB: Create Ticket Error', error);
+          throw error;
+      }
   },
 
   // --- TASKS ---
   async getTasks(): Promise<Task[]> {
-      try {
-          const { data, error } = await supabase.from('tasks').select('*');
-          if(error) throw error;
-          return data as Task[];
-      } catch (e) {
-          return localTasks;
+      const { data, error } = await supabase.from('tasks').select('*').order('due_date', { ascending: true });
+      if(error) {
+          console.error('DB: Fetch Tasks Error', error);
+          return [];
       }
+      return data as Task[];
   },
 
   async createTask(task: Task) {
-      localTasks.push(task);
-      try {
-          await supabase.from('tasks').insert(task);
-      } catch(e) {
-          console.log('DB: Create Task failed, using local');
+      const { error } = await supabase.from('tasks').insert(task);
+      if(error) {
+          console.error('DB: Create Task Error', error);
+          throw error;
       }
   },
 
   async updateTask(task: Task) {
-      localTasks = localTasks.map(t => t.id === task.id ? task : t);
-      try {
-          await supabase.from('tasks').upsert(task);
-      } catch(e) {}
+      const { error } = await supabase.from('tasks').upsert(task);
+      if(error) {
+          console.error('DB: Update Task Error', error);
+          throw error;
+      }
   },
 
   // --- AGENTS ---
   async getAgents(): Promise<AgentPersona[]> {
-    try {
-        const { data, error } = await supabase.from('agents').select('*');
-        if (error) throw error;
-        return data as AgentPersona[];
-    } catch (e) {
-        return localAgents;
+    const { data, error } = await supabase.from('agents').select('*');
+    if (error) {
+        console.error('DB: Fetch Agents Error', error);
+        return []; 
     }
+    return data as AgentPersona[];
   },
 
   async createAgent(agent: AgentPersona) {
-      const existingIndex = localAgents.findIndex(a => a.id === agent.id);
-      if (existingIndex >= 0) {
-          localAgents[existingIndex] = agent;
-      } else {
-          localAgents.push(agent);
-      }
-
-      try {
-          await supabase.from('agents').upsert(agent);
-      } catch (e) {
-          console.log('DB: Agent save failed, using local');
+      const { error } = await supabase.from('agents').upsert(agent);
+      if (error) {
+          console.error('DB: Agent save failed', error);
+          throw error;
       }
   }
 };
