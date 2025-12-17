@@ -3,6 +3,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Phone } from 'lucide-react';
 import ListingCard from './ListingCard';
 import ListingDetails from './ListingDetails';
+import LeadCaptureModal from './LeadCaptureModal';
 import { db } from '../services/db';
 import { geminiClient } from '../services/geminiService';
 import { ApartmentSearchFilters, Listing, User } from '../types';
@@ -101,6 +102,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, currentUser }) 
   const [isLoadingListings, setIsLoadingListings] = useState(false);
   const [filters, setFilters] = useState<ApartmentSearchFilters>({ sortBy: 'default' });
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
+  const [leadModalListing, setLeadModalListing] = useState<Listing | null>(null);
   
   // Voice Agent State
   const [isLiveActive, setIsLiveActive] = useState(false);
@@ -112,6 +114,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, currentUser }) 
   const isDragging = useRef(false);
   const dragOffset = useRef({ x: 0, y: 0 });
   const filtersRef = useRef(filters);
+  const seededListingsRef = useRef(false);
+  const callUsNumber = '+1 (844) 484 9450';
   const ringTimeoutRef = useRef<number | null>(null);
   const ringAudioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -122,7 +126,10 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, currentUser }) 
 
   // Initial Load
   useEffect(() => {
-    loadListings(filters);
+    (async () => {
+      await ensureMinimumListings();
+      loadListings(filters);
+    })();
   }, []);
 
   // Hook up Gemini Client
@@ -214,6 +221,51 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, currentUser }) 
         geminiClient.disconnect();
     };
   }, []);
+
+  const ensureMinimumListings = async () => {
+    if (seededListingsRef.current) return;
+    seededListingsRef.current = true;
+    const existing = await db.searchListings({ sortBy: 'default' });
+    if (existing.length >= 50) return;
+
+    const cities = ['Ghent', 'Antwerp', 'Brussels', 'Leuven', 'Bruges', 'Mechelen', 'Hasselt', 'Namur'];
+    const streets = ['Korenlei', 'Meir', 'Kouter', 'Parklaan', 'Louise Avenue', 'Zuidstraat', 'Sint-Pieters', 'Stationstraat'];
+    const names = ['Canal View', 'Parkside', 'Skyline', 'Garden Loft', 'City Nest', 'Riverlight', 'Maison', 'Courtyard'];
+    const types: Listing['type'][] = ['apartment', 'house', 'studio', 'villa', 'loft', 'kot', 'penthouse', 'duplex'];
+    const energyClasses = ['A+', 'A', 'B', 'C', 'D'];
+
+    const needed = 50 - existing.length;
+    const seeds = Array.from({ length: needed }, (_, i) => {
+      const idx = existing.length + i + 1;
+      const city = cities[idx % cities.length];
+      const street = streets[idx % streets.length];
+      const type = types[idx % types.length];
+      const bedrooms = (idx % 4) + 1;
+      const size = 35 + (idx % 12) * 10;
+      const price = 600 + (idx % 15) * 100;
+      const energyClass = energyClasses[idx % energyClasses.length];
+      const id = `seed-${idx}-${Date.now()}`;
+      return {
+        id,
+        name: `${names[idx % names.length]} ${type} ${idx}`,
+        address: `${street} ${idx}, ${city}`,
+        price,
+        imageUrls: [
+          `https://picsum.photos/seed/eburon-${idx}/800/600`,
+          `https://picsum.photos/seed/eburon-${idx}-b/800/600`
+        ],
+        energyClass,
+        type,
+        size,
+        description: 'Bright, well-maintained home with easy access to transit and local shops.',
+        bedrooms,
+        petsAllowed: idx % 2 === 0,
+        created_at: new Date().toISOString()
+      } as Listing;
+    });
+
+    await Promise.all(seeds.map((listing) => db.createListing(listing)));
+  };
 
   const loadListings = async (currentFilters: ApartmentSearchFilters) => {
     setIsLoadingListings(true);
@@ -478,6 +530,8 @@ Politely ask clarifying questions when necessary, and reassure the client if tec
                             <ListingCard 
                                 key={listing.id} 
                                 listing={listing} 
+                                callUsNumber={callUsNumber}
+                                onRequestCall={(l) => setLeadModalListing(l)}
                                 onClick={(l) => {
                                     setSelectedListing(l);
                                     updateListingUrl(l);
@@ -527,10 +581,18 @@ Politely ask clarifying questions when necessary, and reassure the client if tec
               listing={selectedListing} 
               currentUser={currentUser}
               onLoginRequest={onLoginClick}
+              onRequestCall={(l) => setLeadModalListing(l)}
+              callUsNumber={callUsNumber}
               onClose={() => {
                   setSelectedListing(null);
                   updateListingUrl(null);
               }} 
+          />
+      )}
+      {leadModalListing && (
+          <LeadCaptureModal
+              listing={leadModalListing}
+              onClose={() => setLeadModalListing(null)}
           />
       )}
     </div>
