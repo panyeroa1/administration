@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Lead, Property, User, Ticket, Invoice, AgentPersona, UserRole, Document, Task } from '../types';
+import { Lead, Property, User, Ticket, Invoice, AgentPersona, UserRole, Document, Task, CallState } from '../types';
 import { MOCK_NOTIFICATIONS, AVAILABLE_VOICES, DEFAULT_AGENT_PERSONA } from '../constants';
 import { db } from '../services/db';
 import {
@@ -16,6 +16,7 @@ import {
 import LeadForm from './LeadForm';
 import TicketForm from './TicketForm';
 import ListingForm from './ListingForm';
+import Dialer from './Dialer';
 // WebCall component removed - tab was deleted
 
 interface CRMProps {
@@ -34,13 +35,23 @@ interface CRMProps {
   onCreateTask?: (task: Task) => Promise<void>; // Optional to avoid breaking other components if any
   agents: AgentPersona[];
   onAgentsChange: (agents: AgentPersona[]) => void;
+  callState: CallState;
+  onCallStart: (phoneNumber: string) => void;
+  onCallEnd: () => void;
+  inputVolume: number;
+  outputVolume: number;
+  onToggleRecording: (isRecording: boolean) => void;
+  isRecording: boolean;
+  selectedAgentId: string;
+  onSelectAgent: (agentId: string) => void;
 }
 
 type TabType = 'dialer' | 'dashboard' | 'leads' | 'properties' | 'notifications' | 'calendar' | 'documents' | 'finance' | 'marketing' | 'analytics' | 'settings' | 'maintenance' | 'requests' | 'my-home' | 'jobs' | 'schedule' | 'invoices' | 'agent-config' | 'inbox' | 'tasks';
 
 const CRM: React.FC<CRMProps> = ({ 
     leads, properties, onSelectLead, selectedLeadId, onUpdateLead, currentUser, onLogout,
-    agentPersona, onUpdateAgentPersona, onSwitchUser, tasks, onUpdateTask, onCreateTask, agents, onAgentsChange
+    agentPersona, onUpdateAgentPersona, onSwitchUser, tasks, onUpdateTask, onCreateTask, agents, onAgentsChange,
+    callState, onCallStart, onCallEnd, inputVolume, outputVolume, onToggleRecording, isRecording, selectedAgentId, onSelectAgent
 }) => {
   const [tab, setTab] = useState<TabType>('dashboard');
   const [noteInput, setNoteInput] = useState('');
