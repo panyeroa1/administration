@@ -430,6 +430,15 @@ const App: React.FC = () => {
                     onCreateTask={handleCreateTask}
                     agents={agents}
                     onAgentsChange={setAgents}
+                    callState={callState}
+                    onCallStart={startCall}
+                    onCallEnd={handleEndCall}
+                    inputVolume={audioVols.in}
+                    outputVolume={audioVols.out}
+                    onToggleRecording={toggleRecording}
+                    isRecording={isRecording}
+                    selectedAgentId={agentPersona.id || 'default'}
+                    onSelectAgent={handleSelectAgent}
                 />
             </div>
         </>
@@ -476,6 +485,15 @@ const App: React.FC = () => {
                         onUpdateTask={handleUpdateTask}
                         agents={agents}
                         onAgentsChange={setAgents}
+                        callState={callState}
+                        onCallStart={startCall}
+                        onCallEnd={handleEndCall}
+                        inputVolume={audioVols.in}
+                        outputVolume={audioVols.out}
+                        onToggleRecording={toggleRecording}
+                        isRecording={isRecording}
+                        selectedAgentId={agentPersona.id || 'default'}
+                        onSelectAgent={handleSelectAgent}
                     />
               </div>
 

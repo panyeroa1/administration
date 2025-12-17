@@ -131,6 +131,15 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, currentUser }) 
     };
 
     geminiClient.onClose = () => {
+        if (ringTimeoutRef.current) {
+            window.clearTimeout(ringTimeoutRef.current);
+            ringTimeoutRef.current = null;
+        }
+        if (ringAudioRef.current) {
+            ringAudioRef.current.pause();
+            ringAudioRef.current.currentTime = 0;
+            ringAudioRef.current = null;
+        }
         setIsLiveActive(false);
         setIsRinging(false);
         setAssistantReply('Tap to call +1 (844) 484 9501');
@@ -142,11 +151,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, currentUser }) 
         for (const fc of toolCalls) {
             if (fc.name === 'listProperties') {
                 const args = fc.args as ApartmentSearchFilters & { limit?: number };
-                const newFilters = { ...filtersRef.current, ...args };
+                const { limit, ...filterArgs } = args;
+                const newFilters = { ...filtersRef.current, ...filterArgs };
                 setFilters(newFilters);
                 const results = await loadListings(newFilters);
-                const limit = args.limit ? Math.max(1, Math.min(args.limit, 6)) : 6;
-                const summary = results.slice(0, limit).map((listing) => ({
+                const maxResults = limit ? Math.max(1, Math.min(limit, 6)) : 6;
+                const summary = results.slice(0, maxResults).map((listing) => ({
                     id: listing.id,
                     name: listing.name,
                     address: listing.address,
@@ -342,7 +352,7 @@ Politely ask clarifying questions when necessary, and reassure the client if tec
                     <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
                 </svg>
             </div>
-            <h1 className="text-xl font-bold text-rose-500 tracking-tight hidden sm:block">Homie<span className="text-slate-900">Search</span></h1>
+            <h1 className="text-xl font-bold text-rose-500 tracking-tight hidden sm:block">Eburon<span className="text-slate-900"> Estate</span></h1>
         </div>
 
         {/* Search Bar (Visual Only) */}
