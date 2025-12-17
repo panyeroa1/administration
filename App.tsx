@@ -4,12 +4,11 @@ import Dialer from './components/Dialer';
 import CRM from './components/CRM';
 import Auth from './components/Auth';
 import LandingPage from './components/LandingPage';
-import { Lead, CallState, Recording, User, Property, AgentPersona, UserRole, Task } from './types';
+import { Lead, CallState, Recording, User, Property, AgentPersona, Task } from './types';
 import { geminiClient } from './services/geminiService';
 // vapiService removed - Dialer now embeds app.eburon.ai directly
-import { Download, Save, Trash2, X, AlertCircle, Loader2, Phone, LayoutDashboard, User as UserIcon, Settings, Menu } from 'lucide-react';
+import { Download, Save, Trash2, X, AlertCircle, Loader2, Phone, LayoutDashboard, User as UserIcon, Settings } from 'lucide-react';
 import { db } from './services/db';
-import { DEFAULT_AGENT_PERSONA, generateSystemPrompt } from './constants';
 import { supabase, isConfigured } from './supabaseClient';
 import { createOutboundCall } from './services/vapiCallService';
 
@@ -68,7 +67,7 @@ const App: React.FC = () => {
 
   // Agent Config State
   const [agents, setAgents] = useState<AgentPersona[]>([]);
-  const [agentPersona, setAgentPersona] = useState<AgentPersona>(DEFAULT_AGENT_PERSONA);
+  const [agentPersona, setAgentPersona] = useState<AgentPersona | null>(null);
 
   // Refs for Ringing Logic
   const ringtoneRef = useRef<HTMLAudioElement | null>(null);
@@ -131,15 +130,8 @@ const App: React.FC = () => {
             setProperties(fetchedProperties);
             setTasks(fetchedTasks);
             
-            // Setup agents list and ensure default is present
-            let allAgents = fetchedAgents;
-            if (fetchedAgents.length === 0) {
-                allAgents = [DEFAULT_AGENT_PERSONA];
-                // Optionally save default if DB was empty
-                db.createAgent(DEFAULT_AGENT_PERSONA);
-            }
-            setAgents(allAgents);
-            setAgentPersona(allAgents[0]); // Default to first agent
+            setAgents(fetchedAgents);
+            setAgentPersona(fetchedAgents[0] || null);
         };
         fetchData();
     }
@@ -171,33 +163,9 @@ const App: React.FC = () => {
       await db.createTask(newTask);
   };
 
-  // Switch User (Demo Feature)
-  const handleSwitchUser = (role: UserRole) => {
-      const demoPersonas: Record<UserRole, {name: string, email: string}> = {
-          BROKER: { name: 'Laurent De Wilde', email: 'laurent@eburon.com' },
-          OWNER: { name: 'Marc Peeters', email: 'marc.peeters@telenet.be' },
-          RENTER: { name: 'Sophie Dubois', email: 'sophie.d@example.com' },
-          CONTRACTOR: { name: 'Johan Smet', email: 'johan.smet@fixit.be' }
-      };
-
-      const persona = demoPersonas[role];
-      const newUser: User = {
-          id: `demo-${role.toLowerCase()}`,
-          name: persona.name,
-          email: persona.email,
-          role: role,
-          avatar: `https://ui-avatars.com/api/?name=${persona.name.replace(' ', '+')}&background=random`
-      };
-      
-      setCurrentUser(newUser);
-      setActiveLead(null); // Clear selection when switching
-  };
-
   const handleSelectAgent = (agentId: string) => {
       const selected = agents.find((a: AgentPersona) => a.id === agentId);
-      if (selected) {
-          setAgentPersona(selected);
-      }
+      setAgentPersona(selected || null);
   };
 
   const startCall = async (number: string) => {
@@ -442,7 +410,6 @@ const App: React.FC = () => {
                     onUpdateLead={handleUpdateLead}
                     currentUser={currentUser}
                     onLogout={handleLogout}
-                    onSwitchUser={handleSwitchUser}
                     tasks={tasks}
                     onUpdateTask={handleUpdateTask}
                     onCreateTask={handleCreateTask}
@@ -454,7 +421,7 @@ const App: React.FC = () => {
                     outputVolume={audioVols.out}
                     onToggleRecording={toggleRecording}
                     isRecording={isRecording}
-                    selectedAgentId={agentPersona.id || 'default'}
+                    selectedAgentId={agentPersona?.id || ''}
                     onSelectAgent={handleSelectAgent}
                 />
             </div>
@@ -480,7 +447,7 @@ const App: React.FC = () => {
                         leads={leads}
                         onLeadSelected={(lead) => handleLeadSelect(lead)}
                         agents={agents}
-                        selectedAgentId={agentPersona.id || 'default'}
+                        selectedAgentId={agentPersona?.id || ''}
                         onSelectAgent={handleSelectAgent}
                     />
               </div>
@@ -495,7 +462,6 @@ const App: React.FC = () => {
                         onUpdateLead={handleUpdateLead}
                         currentUser={currentUser}
                         onLogout={handleLogout}
-                        onSwitchUser={handleSwitchUser}
                         tasks={tasks}
                         onUpdateTask={handleUpdateTask}
                         agents={agents}
@@ -506,7 +472,7 @@ const App: React.FC = () => {
                         outputVolume={audioVols.out}
                         onToggleRecording={toggleRecording}
                         isRecording={isRecording}
-                        selectedAgentId={agentPersona.id || 'default'}
+                        selectedAgentId={agentPersona?.id || ''}
                         onSelectAgent={handleSelectAgent}
                     />
               </div>

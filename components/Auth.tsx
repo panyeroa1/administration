@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { UserRole, User } from '../types';
-import { Building, User as UserIcon, Home, Wrench, Lock, AlertCircle, Loader2, ArrowRight } from 'lucide-react';
+import { Building, User as UserIcon, Home, Wrench, Lock, AlertCircle, Loader2 } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { db } from '../services/db';
 
@@ -58,18 +58,23 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
         if (data.user) {
           // 2. Fetch Profile
           let userProfile = await db.getUserProfile(data.user.id);
-          
-          // Fallback if profile missing in DB (or DB table missing)
+
           if (!userProfile) {
-              userProfile = {
+              const fallbackProfile: User = {
                   id: data.user.id,
                   email: data.user.email || '',
                   name: data.user.email?.split('@')[0] || 'User',
-                  role: role, // Default to selected role for demo purposes if DB fetch fails
+                  role: role,
                   avatar: `https://ui-avatars.com/api/?name=${data.user.email}&background=random`
               };
+              await db.createUserProfile(fallbackProfile);
+              userProfile = await db.getUserProfile(data.user.id);
           }
-          
+
+          if (!userProfile) {
+              throw new Error('Profile not found. Please contact support.');
+          }
+
           onLogin(userProfile);
         }
       }
@@ -78,40 +83,6 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleDemoLogin = (selectedRole: UserRole) => {
-      // Define Demo Personas
-      const demoPersonas = {
-          BROKER: { name: 'Laurent De Wilde', email: 'laurent@eburon.com' },
-          OWNER: { name: 'Marc Peeters', email: 'marc.peeters@telenet.be' },
-          RENTER: { name: 'Sophie Dubois', email: 'sophie.d@example.com' },
-          CONTRACTOR: { name: 'Johan Smet', email: 'johan.smet@fixit.be' }
-      };
-
-      const persona = demoPersonas[selectedRole];
-      
-      // Auto-fill fields visually
-      setRole(selectedRole);
-      setEmail(persona.email);
-      setPassword('demo-password-123'); // Dummy password
-      
-      setLoading(true);
-
-      // Simulate network delay for realism, then log in with Mock Data
-      // This ensures the demo buttons ALWAYS work, even if Supabase is empty/down
-      setTimeout(() => {
-          const mockUser: User = {
-              id: `demo-${selectedRole.toLowerCase()}`,
-              name: persona.name,
-              email: persona.email,
-              role: selectedRole,
-              avatar: `https://ui-avatars.com/api/?name=${persona.name.replace(' ', '+')}&background=random`
-          };
-          
-          onLogin(mockUser);
-          setLoading(false);
-      }, 800);
   };
 
   const getRoleIcon = (r: UserRole) => {
@@ -263,35 +234,8 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
           </form>
 
           {mode === 'signin' && (
-             <div className="mt-6">
-                <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-slate-200" />
-                    </div>
-                    <div className="relative flex justify-center text-sm">
-                    <span className="px-3 bg-white text-slate-400 font-medium">Demo Quick Login</span>
-                    </div>
-                </div>
-
-                <div className="mt-6 grid grid-cols-2 gap-3">
-                    {(['BROKER', 'OWNER', 'RENTER', 'CONTRACTOR'] as UserRole[]).map((r) => (
-                        <button
-                            key={r}
-                            onClick={() => handleDemoLogin(r)}
-                            disabled={loading}
-                            className="flex items-center justify-center gap-2 py-3 px-3 border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 hover:shadow-md transition-all group disabled:opacity-50"
-                        >
-                            <div className={`p-1.5 rounded-lg bg-slate-100 text-slate-500 group-hover:bg-slate-900 group-hover:text-white transition-colors`}>
-                                {getRoleIcon(r)}
-                            </div>
-                            <div className="text-left">
-                                <div className="text-xs font-bold text-slate-700 group-hover:text-slate-900">{r.charAt(0) + r.slice(1).toLowerCase()}</div>
-                                <div className="text-[10px] text-slate-400 group-hover:text-slate-600">Auto-fill</div>
-                            </div>
-                            <ArrowRight className="w-3 h-3 text-slate-300 ml-auto group-hover:text-slate-900 group-hover:translate-x-0.5 transition-all" />
-                        </button>
-                    ))}
-                </div>
+             <div className="mt-6 text-xs text-slate-500 text-center">
+                Use your account credentials to sign in.
             </div>
           )}
         </div>

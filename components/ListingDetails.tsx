@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Listing, User } from '../types';
-import { db } from '../services/db';
 
 interface ListingDetailsProps {
   listing: Listing;
@@ -57,13 +56,8 @@ const ListingDetails: React.FC<ListingDetailsProps> = ({ listing, currentUser, o
     setBookingStatus('processing');
     
     try {
-        // Call DB service
-        // For now, we'll assume a method exists or just simulate it if not
-        // db.createReservation(...) 
-        // Since db.ts doesn't have createReservation yet, we'll mock it here or add it to db.ts later
+        // Reservation persistence is not implemented yet.
         await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-        
-        // TODO: Implement actual db.createReservation
         
         setBookingStatus('confirmed');
     } catch (e) {

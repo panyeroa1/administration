@@ -1,6 +1,5 @@
 import { supabase } from '../supabaseClient';
-import { Lead, Property, Ticket, User, UserRole, Task, AgentPersona, ApartmentSearchFilters, Listing } from '../types';
-import { DEFAULT_AGENT_PERSONA } from '../constants';
+import { Lead, Property, Ticket, User, Task, AgentPersona, ApartmentSearchFilters, Listing, Interaction } from '../types';
 
 // MOCK DATA FALLBACKS REMOVED - STRICTLY USING DB
 
@@ -99,15 +98,6 @@ export const db = {
       return (data || []) as Listing[];
   },
 
-  async createReservation(data: any): Promise<boolean> {
-      const { error } = await supabase.from('reservations').insert(data);
-      if (error) {
-          console.error('DB: Reservation failed', error);
-          return false;
-      }
-      return true;
-  },
-
   async saveLeadFromVoice(leadData: Partial<Lead>): Promise<void> {
       const newLead: Lead = {
           id: `voice-${Date.now()}`,
@@ -201,5 +191,14 @@ export const db = {
           console.error('DB: Create Interaction Error', error);
           // Don't throw, just log, so we don't break the UI flow
       }
+  },
+
+  async getInteractions(): Promise<Interaction[]> {
+      const { data, error } = await supabase.from('interactions').select('*').order('timestamp', { ascending: false });
+      if (error) {
+          console.error('DB: Fetch Interactions Error', error);
+          return [];
+      }
+      return data as Interaction[];
   }
 };

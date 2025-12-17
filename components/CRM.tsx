@@ -1,17 +1,14 @@
 
 import React, { useState, useEffect } from 'react';
-import { Lead, Property, User, Ticket, Invoice, AgentPersona, UserRole, Document, Task, CallState } from '../types';
-import { MOCK_NOTIFICATIONS } from '../constants';
+import { Lead, Property, User, Ticket, AgentPersona, Task, CallState, Interaction } from '../types';
 import { db } from '../services/db';
 import {
-  User as UserIcon, Phone, Mail, Clock, MapPin, DollarSign, Home, CheckCircle,
-  ChevronRight, Search, Play, Pause, X, Send, PhoneIncoming,
-  PhoneMissed, Voicemail, LayoutDashboard, Calendar as CalendarIcon, FileText,
-  Settings, Inbox as InboxIcon, Briefcase,
-  Menu, ChevronLeft, ChevronDown, Wrench, HardHat, Bell, LogOut, Shield,
-  Plus, Filter, AlertCircle, Users, CheckSquare, CalendarDays,
-  Receipt, Megaphone, PieChart, BarChart3, Target, MessageSquare,
-  Save, Download
+  User as UserIcon, Phone, Mail, MapPin, Home, CheckCircle,
+  ChevronRight, X, PhoneIncoming,
+  PhoneMissed, Voicemail, LayoutDashboard, Calendar as CalendarIcon,
+  Inbox as InboxIcon, Briefcase,
+  Menu, ChevronLeft, Wrench, Bell, LogOut, Shield,
+  Plus, CheckSquare, CalendarDays, MessageSquare
 } from 'lucide-react';
 import LeadForm from './LeadForm';
 import TicketForm from './TicketForm';
@@ -27,7 +24,6 @@ interface CRMProps {
   onUpdateLead: (lead: Lead) => void;
   currentUser: User;
   onLogout: () => void;
-  onSwitchUser: (role: UserRole) => void;
   tasks: Task[];
   onUpdateTask: (task: Task) => void;
   onCreateTask?: (task: Task) => Promise<void>; // Optional to avoid breaking other components if any
@@ -43,11 +39,11 @@ interface CRMProps {
   onSelectAgent: (agentId: string) => void;
 }
 
-type TabType = 'dialer' | 'dashboard' | 'leads' | 'properties' | 'notifications' | 'calendar' | 'documents' | 'finance' | 'marketing' | 'analytics' | 'settings' | 'maintenance' | 'requests' | 'my-home' | 'jobs' | 'schedule' | 'invoices' | 'inbox' | 'tasks';
+type TabType = 'dialer' | 'dashboard' | 'leads' | 'properties' | 'calendar' | 'maintenance' | 'my-home' | 'jobs' | 'schedule' | 'inbox' | 'tasks';
 
 const CRM: React.FC<CRMProps> = ({ 
     leads, properties, onSelectLead, selectedLeadId, onUpdateLead, currentUser, onLogout,
-    onSwitchUser, tasks, onUpdateTask, onCreateTask, agents,
+    tasks, onUpdateTask, onCreateTask, agents,
     callState, onCallStart, onCallEnd, inputVolume, outputVolume, onToggleRecording, isRecording, selectedAgentId, onSelectAgent
 }) => {
   const [tab, setTab] = useState<TabType>('dashboard');
@@ -56,20 +52,10 @@ const CRM: React.FC<CRMProps> = ({
   const [showLeadForm, setShowLeadForm] = useState(false);
   const [showListingForm, setShowListingForm] = useState(false);
   const [showTicketForm, setShowTicketForm] = useState(false);
-  const [showDocumentForm, setShowDocumentForm] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [documents, setDocuments] = useState<Document[]>([]);
   const [tickets, setTickets] = useState<Ticket[]>([]);
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [interactions, setInteractions] = useState<Interaction[]>([]);
   const [filterTicketStatus, setFilterTicketStatus] = useState<'ALL' | 'OPEN' | 'SCHEDULED' | 'COMPLETED'>('ALL');
-  const [newDocument, setNewDocument] = useState<Partial<Document>>({
-      name: '',
-      category: 'Contracts',
-      type: 'PDF',
-      size: '',
-      date: new Date().toISOString().split('T')[0],
-      sharedWith: ['BROKER']
-  });
   
   // Calendar State
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -81,20 +67,30 @@ const CRM: React.FC<CRMProps> = ({
 
   useEffect(() => {
     const loadData = async () => {
-        const t = await db.getTickets();
+        const [t, i] = await Promise.all([db.getTickets(), db.getInteractions()]);
         setTickets(t);
-        setInvoices([
-            { id: '1', amount: 1200, status: 'PAID', date: '2023-09-01', description: 'Monthly Rent', propertyAddress: 'Kouter 12' },
-            { id: '2', amount: 240, status: 'PENDING', date: '2023-09-15', description: 'Plumbing Repair', propertyAddress: 'Meir 24' }
-        ]);
+        setInteractions(i);
     };
     loadData();
   }, [currentUser]);
 
   const activeLead = leads.find(l => l.id === selectedLeadId);
-  const notifications = MOCK_NOTIFICATIONS[currentUser.role] || [];
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const notifications = interactions.slice(0, 5);
+  const unreadCount = notifications.length;
   const pendingTasks = tasks.filter(t => !t.completed).length;
+  const openTickets = tickets.filter(t => t.status === 'OPEN').length;
+  const scheduledTickets = tickets.filter(t => t.status === 'SCHEDULED').length;
+
+  const getLeadName = (leadId?: string) => {
+    if (!leadId) return 'Unknown lead';
+    const lead = leads.find(l => l.id === leadId);
+    return lead ? `${lead.firstName} ${lead.lastName}` : 'Unknown lead';
+  };
+
+  const formatInteractionTitle = (interaction: Interaction) => {
+    const leadName = getLeadName(interaction.leadId);
+    return `${interaction.type} · ${interaction.direction} · ${leadName}`;
+  };
 
   const handleSaveNote = () => {
     if (!noteInput.trim() || !activeLead) return;
@@ -117,28 +113,8 @@ const CRM: React.FC<CRMProps> = ({
   };
 
   // --- Button Handlers ---
-  const handleCreateCampaign = () => {
-      const name = window.prompt("Enter campaign name:");
-      if (name) alert(`Campaign "${name}" created! (Mock)`);
-  };
-
   const handleCreateTicket = () => {
       setShowTicketForm(true);
-  };
-
-
-
-
-  const handleComposeEmail = () => {
-      alert("Compose Email feature coming soon!");
-  };
-
-  const handleUploadDocument = () => {
-      setShowDocumentForm(true);
-  };
-
-  const handleGenerateInvoice = () => {
-      alert("Generate Invoice feature coming soon!");
   };
 
   const handleAddTask = async () => {
@@ -169,37 +145,6 @@ const CRM: React.FC<CRMProps> = ({
   const refreshTickets = async () => {
       const t = await db.getTickets();
       setTickets(t);
-  };
-
-  const handleDocumentSubmit = (e: React.FormEvent) => {
-      e.preventDefault();
-      if (!newDocument.name) return;
-      const doc: Document = {
-          id: crypto.randomUUID(),
-          name: newDocument.name || 'Untitled',
-          category: (newDocument as Document).category || 'Contracts',
-          type: (newDocument as Document).type || 'PDF',
-          size: newDocument.size || 'N/A',
-          date: newDocument.date || new Date().toISOString().split('T')[0],
-          sharedWith: newDocument.sharedWith || ['BROKER']
-      };
-      setDocuments(prev => [doc, ...prev]);
-      setNewDocument({
-          name: '',
-          category: 'Contracts',
-          type: 'PDF',
-          size: '',
-          date: new Date().toISOString().split('T')[0],
-          sharedWith: ['BROKER']
-      });
-      setShowDocumentForm(false);
-  };
-
-  const handleDocumentChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-      const { name, value } = e.target;
-      setNewDocument(prev => ({ ...prev, [name]: value }));
   };
 
 
@@ -233,42 +178,7 @@ const CRM: React.FC<CRMProps> = ({
   // --- TAB VIEWS ---
 
   const DialerView = () => {
-      const [dialerForm, setDialerForm] = useState({
-          id: '6282dc43-b1a8-47e4-8493-279b3e2a12eb',
-          orgId: '2e688723-0054-43c7-bcbb-0391c96b87c4',
-          name: 'BrokerStephen',
-          voiceId: 'Elliot',
-          voiceProvider: 'vapi',
-          model: 'gpt-5.2-chat-latest',
-          modelProvider: 'openai',
-          systemPromptTitle: 'SYSTEM CONFIGURATION: STEPHEN LERNOUT (FINAL BELGIAN GOLD)',
-          firstMessage: 'Ja, hallo met Stephen hier! <breath_soft/> Ik hoop dat ik niet stoor, maar ik bel u even op omdat ik zag dat ge interesse had in een van onze panden op de website.',
-          voicemailMessage: "Please call back when you're available.",
-          transcriberLanguage: 'nl-BE',
-          transcriberProvider: 'azure',
-          firstMessageMode: 'assistant-speaks-first',
-          backgroundSound: 'off',
-          endCallMessage: 'Goodbye.',
-          endCallFunctionEnabled: true,
-          dialKeypadFunctionEnabled: true,
-          backgroundDenoisingEnabled: true,
-          createdAt: '2025-11-11T03:02:59.076Z',
-          updatedAt: '2025-12-16T22:40:50.779Z'
-      });
-
-      const handleDialerChange = (
-        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-      ) => {
-          const { name } = e.target;
-          const target = e.target as HTMLInputElement;
-          const isCheckbox = target.type === 'checkbox';
-          setDialerForm(prev => ({
-              ...prev,
-              [name]: isCheckbox ? target.checked : e.target.value
-          }));
-      };
-
-      const inputClassName = 'w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm text-slate-800 focus:ring-2 focus:ring-black/10';
+      const selectedAgent = agents.find(agent => agent.id === selectedAgentId) || agents[0];
       const labelClassName = 'text-[10px] font-bold text-slate-500 uppercase tracking-wider';
 
       return (
@@ -276,102 +186,75 @@ const CRM: React.FC<CRMProps> = ({
               <div className="flex items-center justify-between mb-6">
                   <div>
                       <h2 className="text-2xl font-bold text-slate-800">Dialer</h2>
-                      <p className="text-sm text-slate-500">Voice agent configuration and call defaults.</p>
+                      <p className="text-sm text-slate-500">Agent profile data loaded from the database.</p>
                   </div>
               </div>
               <div className="flex flex-col xl:flex-row gap-8 items-start">
                   <div className="flex-1 min-w-0">
                       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-6">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              <div className="space-y-1">
-                                  <label htmlFor="dialer-agent-name" className={labelClassName}>Agent Name</label>
-                                  <input
-                                      id="dialer-agent-name"
-                                      name="name"
-                                      value={dialerForm.name}
-                                      onChange={handleDialerChange}
-                                      className={inputClassName}
-                                  />
+                          {selectedAgent ? (
+                              <div className="space-y-6">
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                      <div className="space-y-1">
+                                          <div className={labelClassName}>Agent Name</div>
+                                          <div className="text-sm text-slate-800 font-semibold">{selectedAgent.name}</div>
+                                      </div>
+                                      <div className="space-y-1">
+                                          <div className={labelClassName}>Agent ID</div>
+                                          <div className="text-sm text-slate-600">{selectedAgent.id || '—'}</div>
+                                      </div>
+                                  </div>
+
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                      <div className="space-y-1">
+                                          <div className={labelClassName}>Role</div>
+                                          <div className="text-sm text-slate-800">{selectedAgent.role}</div>
+                                      </div>
+                                      <div className="space-y-1">
+                                          <div className={labelClassName}>Tone</div>
+                                          <div className="text-sm text-slate-800">{selectedAgent.tone}</div>
+                                      </div>
+                                  </div>
+
+                                  <div className="space-y-1">
+                                      <div className={labelClassName}>Language Style</div>
+                                      <div className="text-sm text-slate-800">{selectedAgent.languageStyle}</div>
+                                  </div>
+
+                                  <div className="space-y-1">
+                                      <div className={labelClassName}>Objectives</div>
+                                      <div className="flex flex-wrap gap-2">
+                                          {(selectedAgent.objectives || []).length > 0 ? (
+                                              selectedAgent.objectives.map((objective) => (
+                                                  <span key={objective} className="text-xs font-medium bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full">
+                                                      {objective}
+                                                  </span>
+                                              ))
+                                          ) : (
+                                              <span className="text-xs text-slate-400">No objectives set</span>
+                                          )}
+                                      </div>
+                                  </div>
+
+                                  <div className="space-y-1">
+                                      <div className={labelClassName}>First Sentence</div>
+                                      <div className="text-sm text-slate-700 whitespace-pre-wrap">
+                                          {selectedAgent.firstSentence || '—'}
+                                      </div>
+                                  </div>
+
+                                  <div className="space-y-1">
+                                      <div className={labelClassName}>System Prompt</div>
+                                      <div className="text-xs text-slate-600 whitespace-pre-wrap bg-slate-50 border border-slate-200 rounded-lg p-3 max-h-52 overflow-y-auto">
+                                          {selectedAgent.systemPrompt || '—'}
+                                      </div>
+                                  </div>
                               </div>
-                              <div className="space-y-1">
-                                  <label htmlFor="dialer-agent-id" className={labelClassName}>Agent ID</label>
-                                  <input
-                                      id="dialer-agent-id"
-                                      name="id"
-                                      value={dialerForm.id}
-                                      onChange={handleDialerChange}
-                                      className={inputClassName}
-                                  />
+                          ) : (
+                              <div className="text-sm text-slate-500">
+                                  No agent profile found in the database. Add an agent record to `agents` to configure the dialer.
                               </div>
-                          </div>
-
-                          <div className="space-y-1">
-                              <label htmlFor="dialer-system-prompt" className={labelClassName}>System Prompt Label</label>
-                              <input
-                                  id="dialer-system-prompt"
-                                  name="systemPromptTitle"
-                                  value={dialerForm.systemPromptTitle}
-                                  onChange={handleDialerChange}
-                                  className={inputClassName}
-                              />
-                          </div>
-
-                          <div className="space-y-1">
-                              <label htmlFor="dialer-first-message" className={labelClassName}>First Message</label>
-                              <textarea
-                                  id="dialer-first-message"
-                                  name="firstMessage"
-                                  value={dialerForm.firstMessage}
-                                  onChange={handleDialerChange}
-                                  rows={3}
-                                  className={`${inputClassName} resize-none`}
-                              />
-                          </div>
-
-                          <div className="space-y-1">
-                              <label htmlFor="dialer-voicemail-message" className={labelClassName}>Voicemail Message</label>
-                              <textarea
-                                  id="dialer-voicemail-message"
-                                  name="voicemailMessage"
-                                  value={dialerForm.voicemailMessage}
-                                  onChange={handleDialerChange}
-                                  rows={2}
-                                  className={`${inputClassName} resize-none`}
-                              />
-                          </div>
-
-                          <div className="flex flex-wrap gap-4 text-xs text-slate-600">
-                              <label className="flex items-center gap-2">
-                                  <input
-                                      type="checkbox"
-                                      name="endCallFunctionEnabled"
-                                      checked={dialerForm.endCallFunctionEnabled}
-                                      onChange={handleDialerChange}
-                                      className="h-4 w-4 rounded border-slate-300 text-black focus:ring-black"
-                                  />
-                                  End Call Function Enabled
-                              </label>
-                              <label className="flex items-center gap-2">
-                                  <input
-                                      type="checkbox"
-                                      name="dialKeypadFunctionEnabled"
-                                      checked={dialerForm.dialKeypadFunctionEnabled}
-                                      onChange={handleDialerChange}
-                                      className="h-4 w-4 rounded border-slate-300 text-black focus:ring-black"
-                                  />
-                                  Dial Keypad Function Enabled
-                              </label>
-                              <label className="flex items-center gap-2">
-                                  <input
-                                      type="checkbox"
-                                      name="backgroundDenoisingEnabled"
-                                      checked={dialerForm.backgroundDenoisingEnabled}
-                                      onChange={handleDialerChange}
-                                      className="h-4 w-4 rounded border-slate-300 text-black focus:ring-black"
-                                  />
-                                  Background Denoising Enabled
-                              </label>
-                          </div>
+                          )}
                       </div>
                   </div>
                   <div className="w-full xl:w-[420px] flex justify-center">
@@ -404,19 +287,25 @@ const CRM: React.FC<CRMProps> = ({
   const DashboardView = () => (
       <div className="animate-in fade-in duration-500">
           <h2 className="text-2xl font-bold text-slate-800 mb-6">Welcome back, {currentUser.name.split(' ')[0]}</h2>
+          {(() => {
+              const stats = [
+                  { label: 'Leads', val: leads.length, icon: UserIcon, color: 'bg-slate-700' },
+                  { label: 'Properties', val: properties.length, icon: Home, color: 'bg-slate-600' },
+                  { label: 'Open Tickets', val: openTickets, icon: Wrench, color: 'bg-amber-500' },
+                  { label: 'Pending Tasks', val: pendingTasks, icon: CheckSquare, color: 'bg-slate-500' }
+              ];
+              const recentInteractions = interactions.slice(0, 4);
+
+              return (
+                  <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              {[
-                  { label: currentUser.role === 'BROKER' ? 'Revenue' : 'Balance', val: '€42.5k', change: '+12%', icon: DollarSign, color: 'bg-black 500' },
-                  { label: 'Pending Tasks', val: pendingTasks, change: 'Keep it up', icon: CheckSquare, color: 'bg-amber-500' },
-                  { label: 'Messages', val: '12', change: 'New', icon: Mail, color: 'bg-slate-500' },
-                  { label: 'Rating', val: '4.9', change: '+0.1', icon: CheckCircle, color: 'bg-slate-500' }
-              ].map((stat, i) => (
+              {stats.map((stat, i) => (
                   <div key={i} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-start justify-between hover:shadow-md transition-shadow">
                       <div>
                           <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">{stat.label}</p>
                           <h3 className="text-2xl font-bold text-slate-900">{stat.val}</h3>
-                          <span className={`text-xs font-medium ${stat.change.startsWith('+') ? 'text-slate-600' : 'text-slate-500'} flex items-center mt-1`}>
-                              {stat.change} this month
+                          <span className="text-xs font-medium text-slate-500 flex items-center mt-1">
+                              from live data
                           </span>
                       </div>
                       <div className={`${stat.color} p-3 rounded-xl text-white shadow-lg shadow-indigo-100`}>
@@ -425,118 +314,118 @@ const CRM: React.FC<CRMProps> = ({
                   </div>
               ))}
           </div>
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+              <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-bold text-slate-800">Recent Activity</h3>
+                  <span className="text-xs text-slate-400">Interactions</span>
+              </div>
+              {recentInteractions.length > 0 ? (
+                  <div className="space-y-3">
+                      {recentInteractions.map(interaction => (
+                          <div key={interaction.id} className="flex items-start gap-3 border-b border-slate-100 pb-3 last:border-b-0 last:pb-0">
+                              <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 text-xs font-bold">
+                                  {interaction.type?.slice(0, 1)}
+                              </div>
+                              <div className="flex-1">
+                                  <p className="text-sm font-semibold text-slate-800">{formatInteractionTitle(interaction)}</p>
+                                  <p className="text-xs text-slate-500 line-clamp-2">{interaction.content}</p>
+                              </div>
+                              <span className="text-xs text-slate-400">
+                                  {interaction.timestamp ? new Date(interaction.timestamp).toLocaleDateString() : ''}
+                              </span>
+                          </div>
+                      ))}
+                  </div>
+              ) : (
+                  <div className="text-sm text-slate-500">No recent interactions yet.</div>
+              )}
+          </div>
+                  </>
+              );
+          })()}
       </div>
   );
 
-  const InboxView = () => (
-      <div className="animate-in fade-in duration-500 h-full flex flex-col">
-          <div className="flex justify-between items-center mb-6">
-              <div>
-                   <h2 className="text-2xl font-bold text-slate-800">Inbox</h2>
-                   <p className="text-slate-500 text-sm">Unified messaging (Email, WhatsApp)</p>
-              </div>
-          </div>
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm flex-1 overflow-hidden flex">
-              <div className="w-full md:w-1/3 border-r border-slate-100 flex flex-col">
-                   <div className="p-4 border-b border-slate-100">
-                       <input type="text" placeholder="Search messages..." className="w-full px-4 py-2 bg-slate-50 rounded-lg text-sm outline-none focus:ring-2 focus:ring-slate-900 500/50"/>
-                   </div>
-                   <div className="overflow-y-auto flex-1">
-                       {[].map((email: any) => (
-                           <div key={email.id} className={`p-4 border-b border-slate-50 hover:bg-slate-50 cursor-pointer transition-colors ${!email.read ? 'bg-black 50/30' : ''}`}>
-                               <div className="flex justify-between items-start mb-1">
-                                   <div className="flex items-center gap-2">
-                                        {email.source === 'WHATSAPP' ? (
-                                            <div className="w-5 h-5 bg-slate-500 rounded-full flex items-center justify-center text-white"><MessageSquare className="w-3 h-3"/></div>
-                                        ) : (
-                                            <div className="w-5 h-5 bg-slate-500 rounded-full flex items-center justify-center text-white"><Mail className="w-3 h-3"/></div>
-                                        )}
-                                        <span className={`text-sm font-bold ${!email.read ? 'text-slate-900' : 'text-slate-600'}`}>{email.from}</span>
-                                   </div>
-                                   <span className="text-xs text-slate-400">{email.date}</span>
-                               </div>
-                               <div className={`text-sm mb-1 ${!email.read ? 'font-bold text-slate-800' : 'text-slate-700'}`}>{email.subject}</div>
-                               <div className="text-xs text-slate-500 truncate">{email.preview}</div>
-                           </div>
-                       ))}
-                   </div>
-              </div>
-              <div className="hidden md:flex flex-1 flex-col items-center justify-center text-slate-400 bg-slate-50/30">
-                  <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm mb-4">
-                      <InboxIcon className="w-8 h-8 text-slate-300"/>
+  const InboxView = () => {
+      const inboxItems = interactions.filter((interaction) => interaction.type === 'EMAIL' || interaction.type === 'SMS');
+      const [activeInteractionId, setActiveInteractionId] = useState<string | null>(inboxItems[0]?.id || null);
+      const activeInteraction = inboxItems.find(item => item.id === activeInteractionId) || null;
+      useEffect(() => {
+          if (!activeInteractionId && inboxItems[0]?.id) {
+              setActiveInteractionId(inboxItems[0].id);
+          }
+      }, [activeInteractionId, inboxItems]);
+
+      return (
+          <div className="animate-in fade-in duration-500 h-full flex flex-col">
+              <div className="flex justify-between items-center mb-6">
+                  <div>
+                       <h2 className="text-2xl font-bold text-slate-800">Inbox</h2>
+                       <p className="text-slate-500 text-sm">Email and SMS interactions</p>
                   </div>
-                  <p className="text-sm font-medium">Select a message to view conversation</p>
+              </div>
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm flex-1 overflow-hidden flex">
+                  <div className="w-full md:w-1/3 border-r border-slate-100 flex flex-col">
+                       <div className="p-4 border-b border-slate-100">
+                           <input type="text" placeholder="Search messages..." className="w-full px-4 py-2 bg-slate-50 rounded-lg text-sm outline-none focus:ring-2 focus:ring-slate-900 500/50"/>
+                       </div>
+                       <div className="overflow-y-auto flex-1">
+                           {inboxItems.length > 0 ? inboxItems.map((message) => (
+                               <button
+                                   key={message.id}
+                                   onClick={() => setActiveInteractionId(message.id || null)}
+                                   className={`w-full text-left p-4 border-b border-slate-50 hover:bg-slate-50 transition-colors ${activeInteractionId === message.id ? 'bg-slate-50' : ''}`}
+                               >
+                                   <div className="flex justify-between items-start mb-1">
+                                       <div className="flex items-center gap-2">
+                                            {message.type === 'SMS' ? (
+                                                <div className="w-5 h-5 bg-slate-500 rounded-full flex items-center justify-center text-white"><MessageSquare className="w-3 h-3"/></div>
+                                            ) : (
+                                                <div className="w-5 h-5 bg-slate-500 rounded-full flex items-center justify-center text-white"><Mail className="w-3 h-3"/></div>
+                                            )}
+                                            <span className="text-sm font-bold text-slate-900">{getLeadName(message.leadId)}</span>
+                                       </div>
+                                       <span className="text-xs text-slate-400">
+                                          {message.timestamp ? new Date(message.timestamp).toLocaleDateString() : ''}
+                                       </span>
+                                   </div>
+                                   <div className="text-sm font-medium text-slate-700">{message.direction}</div>
+                                   <div className="text-xs text-slate-500 truncate">{message.content}</div>
+                               </button>
+                           )) : (
+                               <div className="p-6 text-sm text-slate-500">No email or SMS interactions yet.</div>
+                           )}
+                       </div>
+                  </div>
+                  <div className="hidden md:flex flex-1 flex-col p-8 bg-slate-50/30">
+                      {activeInteraction ? (
+                          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 h-full">
+                              <div className="flex items-center justify-between mb-4">
+                                  <div>
+                                      <h3 className="text-lg font-bold text-slate-800">{getLeadName(activeInteraction.leadId)}</h3>
+                                      <p className="text-xs text-slate-500">{activeInteraction.type} · {activeInteraction.direction}</p>
+                                  </div>
+                                  <span className="text-xs text-slate-400">
+                                      {activeInteraction.timestamp ? new Date(activeInteraction.timestamp).toLocaleString() : ''}
+                                  </span>
+                              </div>
+                              <div className="text-sm text-slate-700 whitespace-pre-wrap">{activeInteraction.content}</div>
+                          </div>
+                      ) : (
+                          <div className="flex flex-1 flex-col items-center justify-center text-slate-400">
+                              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm mb-4">
+                                  <InboxIcon className="w-8 h-8 text-slate-300"/>
+                              </div>
+                              <p className="text-sm font-medium">Select a message to view conversation</p>
+                          </div>
+                      )}
+                  </div>
               </div>
           </div>
-      </div>
-  );
+      );
+  };
 
   // ExternalAdminView removed - tab was deleted
-
-  const MarketingView = () => (
-      <div className="animate-in fade-in duration-500">
-           <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-slate-800">Marketing</h2>
-                <button onClick={handleCreateCampaign} className="bg-black 600 text-white px-4 py-2 rounded-lg text-sm font-medium flex gap-2 items-center">
-                    <Plus className="w-4 h-4" /> New Campaign
-                </button>
-           </div>
-           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-               {[].map((camp: any) => (
-                   <div key={camp.id} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                       <div className="flex justify-between items-start mb-4">
-                           <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${
-                               camp.status === 'Active' ? 'bg-slate-100 text-slate-700' : 'bg-slate-100 text-slate-600'
-                           }`}>
-                               {camp.status}
-                           </span>
-                           <span className="text-xs font-bold text-slate-400">{camp.platform}</span>
-                       </div>
-                       <h3 className="font-bold text-slate-900 mb-6">{camp.name}</h3>
-                       <div className="flex justify-between items-end">
-                           <div>
-                               <p className="text-xs text-slate-500 uppercase font-bold mb-1">Clicks</p>
-                               <p className="text-xl font-bold text-slate-800">{camp.clicks}</p>
-                           </div>
-                            <div>
-                               <p className="text-xs text-slate-500 uppercase font-bold mb-1">Spend</p>
-                               <p className="text-xl font-bold text-slate-800">{camp.spend}</p>
-                           </div>
-                       </div>
-                   </div>
-               ))}
-           </div>
-      </div>
-  );
-
-  const AnalyticsView = () => (
-      <div className="animate-in fade-in duration-500">
-           <h2 className="text-2xl font-bold text-slate-800 mb-6">Analytics</h2>
-           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-               <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm min-h-[300px] flex flex-col justify-center items-center text-center">
-                   <BarChart3 className="w-16 h-16 text-white 100 mb-4"/>
-                   <h3 className="text-lg font-bold text-slate-700">Performance Metrics</h3>
-                   <div className="flex gap-2 items-end h-32 mt-4">
-                        {/* Dynamic heights based on data - inline style required for data-driven rendering */}
-                        {[40, 70, 45, 90, 65, 80, 50].map((h, i) => (
-                            <div key={i} style={{height: `${h}%`}} className="w-4 bg-slate-500 rounded-t-sm"></div>
-                        ))}
-                   </div>
-               </div>
-               <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm min-h-[300px] flex flex-col justify-center items-center text-center">
-                   <Target className="w-16 h-16 text-white 100 mb-4"/>
-                   <h3 className="text-lg font-bold text-slate-700">Conversion Goals</h3>
-                    <div className="relative w-32 h-32 mt-4">
-                        <svg className="w-full h-full" viewBox="0 0 36 36">
-                            <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#e2e8f0" strokeWidth="3" />
-                            <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831" fill="none" stroke="#10b981" strokeWidth="3" strokeDasharray="75, 100" />
-                        </svg>
-                        <div className="absolute inset-0 flex items-center justify-center font-bold text-slate-800">75%</div>
-                    </div>
-               </div>
-           </div>
-      </div>
-  );
 
   const MaintenanceView = () => (
       <div className="animate-in fade-in duration-500 h-full flex flex-col">
@@ -598,46 +487,6 @@ const CRM: React.FC<CRMProps> = ({
       </div>
   );
 
-  const FinanceView = () => (
-      <div className="animate-in fade-in duration-500">
-          <h2 className="text-2xl font-bold text-slate-800 mb-6">Financial Overview</h2>
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6">
-              <h3 className="font-bold text-slate-800 mb-4">Invoices & Payments</h3>
-              <div className="overflow-x-auto">
-                  <table className="w-full text-left text-sm">
-                      <thead className="bg-slate-50 text-slate-500 text-xs uppercase font-semibold">
-                          <tr>
-                              <th className="px-4 py-3">Invoice ID</th>
-                              <th className="px-4 py-3">Property</th>
-                              <th className="px-4 py-3">Description</th>
-                              <th className="px-4 py-3">Date</th>
-                              <th className="px-4 py-3">Amount</th>
-                              <th className="px-4 py-3">Status</th>
-                          </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-100">
-                          {invoices.map(inv => (
-                              <tr key={inv.id} className="hover:bg-slate-50">
-                                  <td className="px-4 py-3 font-mono text-slate-500">#{inv.id}</td>
-                                  <td className="px-4 py-3 text-slate-800 font-medium">{inv.propertyAddress}</td>
-                                  <td className="px-4 py-3 text-slate-600">{inv.description}</td>
-                                  <td className="px-4 py-3 text-slate-500">{inv.date}</td>
-                                  <td className="px-4 py-3 font-bold text-slate-900">€{inv.amount}</td>
-                                  <td className="px-4 py-3">
-                                      <span className={`px-2 py-1 rounded-full text-xs font-bold ${
-                                          inv.status === 'PAID' ? 'bg-slate-100 text-slate-700' : 'bg-amber-100 text-amber-700'
-                                      }`}>
-                                          {inv.status}
-                                      </span>
-                                  </td>
-                              </tr>
-                          ))}
-                      </tbody>
-                  </table>
-              </div>
-          </div>
-      </div>
-  );
 
   const CalendarView = () => {
     // ... reused logic ...
@@ -683,63 +532,6 @@ const CRM: React.FC<CRMProps> = ({
       </div>
     );
   };
-
-  const DocumentsView = () => (
-      <div className="animate-in fade-in duration-500 h-full flex flex-col">
-          <div className="flex justify-between items-center mb-6">
-              <div>
-                   <h2 className="text-2xl font-bold text-slate-800">Documents</h2>
-                   <p className="text-slate-500 text-sm">Contracts, Invoices, and Reports</p>
-              </div>
-              <button onClick={handleUploadDocument} className="bg-black 600 text-white px-4 py-2 rounded-lg text-sm font-medium flex gap-2 items-center hover:bg-black 700">
-                  <Plus className="w-4 h-4" /> Upload Document
-              </button>
-          </div>
-          <div className="bg-white rounded-xl border border-slate-200 shadow-sm flex-1 overflow-hidden flex flex-col">
-              <div className="overflow-x-auto">
-                  <table className="w-full text-left text-sm">
-                      <thead className="bg-slate-50 text-slate-500 text-xs uppercase font-semibold border-b border-slate-100">
-                          <tr>
-                              <th className="px-6 py-4">Name</th>
-                              <th className="px-6 py-4">Category</th>
-                              <th className="px-6 py-4">Date</th>
-                              <th className="px-6 py-4">Size</th>
-                              <th className="px-6 py-4"></th>
-                          </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-100">
-                          {documents.map(doc => (
-                              <tr key={doc.id} className="hover:bg-slate-50 transition-colors">
-                                  <td className="px-6 py-4">
-                                      <div className="flex items-center gap-3">
-                                          <div className={`p-2 rounded-lg ${
-                                              doc.type === 'PDF' ? 'bg-red-50 text-red-600' : 
-                                              doc.type === 'XLS' ? 'bg-slate-50 text-slate-600' :
-                                              doc.type === 'IMG' ? 'bg-slate-50 text-slate-600' : 'bg-slate-50 text-slate-600'
-                                          }`}>
-                                              <FileText className="w-5 h-5"/>
-                                          </div>
-                                          <div className="font-medium text-slate-900">{doc.name}</div>
-                                      </div>
-                                  </td>
-                                  <td className="px-6 py-4">
-                                      <span className="px-2 py-1 bg-slate-100 rounded text-xs font-bold text-slate-600">{doc.category}</span>
-                                  </td>
-                                  <td className="px-6 py-4 text-slate-500">{doc.date}</td>
-                                  <td className="px-6 py-4 text-slate-500 font-mono text-xs">{doc.size}</td>
-                                  <td className="px-6 py-4 text-right">
-                                      <button aria-label="Download document" className="text-slate-400 hover:text-white 600 transition-colors">
-                                          <Download className="w-4 h-4"/>
-                                      </button>
-                                  </td>
-                              </tr>
-                          ))}
-                      </tbody>
-                  </table>
-              </div>
-          </div>
-      </div>
-  );
 
   const TasksView = () => (
       <div className="animate-in fade-in duration-500 h-full flex flex-col">
@@ -802,10 +594,13 @@ const CRM: React.FC<CRMProps> = ({
                     <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-2xl border border-slate-100 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2">
                         <div className="px-4 py-3 border-b border-slate-50 bg-slate-50/50 flex justify-between items-center"><h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Notifications</h4></div>
                         <div className="max-h-64 overflow-y-auto">
-                            {notifications.length > 0 ? notifications.map(n => (
-                                <div key={n.id} className="px-4 py-3 border-b border-slate-50">
-                                    <p className="text-sm font-semibold">{n.title}</p>
-                                    <p className="text-xs text-slate-500">{n.message}</p>
+                            {notifications.length > 0 ? notifications.map((interaction) => (
+                                <div key={interaction.id} className="px-4 py-3 border-b border-slate-50">
+                                    <p className="text-sm font-semibold">{formatInteractionTitle(interaction)}</p>
+                                    <p className="text-xs text-slate-500 line-clamp-2">{interaction.content}</p>
+                                    <p className="text-[10px] text-slate-400 mt-1">
+                                        {interaction.timestamp ? new Date(interaction.timestamp).toLocaleString() : ''}
+                                    </p>
                                 </div>
                             )) : <div className="p-4 text-center text-xs">No notifications</div>}
                         </div>
@@ -813,24 +608,13 @@ const CRM: React.FC<CRMProps> = ({
                  )}
              </div>
 
-             <div className="flex items-center gap-2 cursor-pointer hover:bg-slate-50 p-1.5 rounded-full pr-3 border border-transparent hover:border-slate-200 transition-all group relative">
+             <div className="flex items-center gap-2 hover:bg-slate-50 p-1.5 rounded-full pr-3 border border-transparent hover:border-slate-200 transition-all">
                 <div className="w-8 h-8 rounded-full bg-slate-200 overflow-hidden border border-slate-300">
                     <img src={currentUser.avatar || `https://ui-avatars.com/api/?name=${currentUser.name}`} alt="User" />
                 </div>
                 <div className="hidden md:block text-left">
                     <div className="text-sm font-medium text-slate-700 leading-none">{currentUser.name}</div>
                     <div className="text-[10px] text-slate-500 font-medium mt-0.5">{currentUser.role}</div>
-                </div>
-                <ChevronDown className="w-3 h-3 text-slate-400 hidden md:block" />
-                
-                {/* User Dropdown */}
-                <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-xl border border-slate-100 overflow-hidden hidden group-hover:block animate-in fade-in slide-in-from-top-2 z-50">
-                    <div className="px-4 py-2 bg-slate-50 border-b border-slate-100"><p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Switch Profile (Demo)</p></div>
-                    {(['BROKER', 'OWNER', 'RENTER', 'CONTRACTOR'] as UserRole[]).map(r => (
-                        <button key={r} onClick={() => onSwitchUser(r)} className={`w-full text-left px-4 py-2 text-sm hover:bg-slate-50 flex items-center gap-2 ${currentUser.role === r ? 'bg-slate-50 text-slate-700 font-bold' : 'text-slate-600'}`}>
-                            <Users className="w-3 h-3"/> {r.charAt(0) + r.slice(1).toLowerCase()}
-                        </button>
-                    ))}
                 </div>
              </div>
         </div>
@@ -853,14 +637,7 @@ const CRM: React.FC<CRMProps> = ({
                         <NavItem id="properties" label="Properties" icon={Home} />
                         <NavItem id="tasks" label="Tasks" icon={CheckSquare} badge={pendingTasks > 0 ? pendingTasks.toString() : undefined} />
                         <NavItem id="calendar" label="Calendar" icon={CalendarIcon} />
-                        <NavItem id="maintenance" label="Maintenance" icon={Wrench} badge={tickets.filter(t=>t.status==='OPEN').length.toString()} />
-                    </div>
-                    <SectionHeader label="Management" />
-                    <div className="px-3 space-y-0.5">
-                        <NavItem id="documents" label="Documents" icon={FileText} />
-                        <NavItem id="finance" label="Finance" icon={Receipt} />
-                        <NavItem id="marketing" label="Marketing" icon={Megaphone} />
-                        <NavItem id="analytics" label="Analytics" icon={PieChart} />
+                        <NavItem id="maintenance" label="Maintenance" icon={Wrench} badge={openTickets > 0 ? openTickets.toString() : undefined} />
                     </div>
                 </>
              )}
@@ -870,9 +647,7 @@ const CRM: React.FC<CRMProps> = ({
                     <div className="px-3"><NavItem id="dashboard" label="Dashboard" icon={LayoutDashboard} /></div>
                     <div className="px-3 space-y-0.5 mt-2">
                         <NavItem id="properties" label="My Properties" icon={Home} />
-                        <NavItem id="finance" label="Financials" icon={DollarSign} />
-                        <NavItem id="documents" label="Documents" icon={FileText} />
-                        <NavItem id="maintenance" label="Requests" icon={CheckCircle} />
+                        <NavItem id="maintenance" label="Requests" icon={CheckCircle} badge={openTickets > 0 ? openTickets.toString() : undefined} />
                     </div>
                 </>
              )}
@@ -883,7 +658,6 @@ const CRM: React.FC<CRMProps> = ({
                     <div className="px-3 space-y-0.5 mt-2">
                         <NavItem id="my-home" label="My Home" icon={Home} />
                         <NavItem id="maintenance" label="Report Issue" icon={Wrench} />
-                        <NavItem id="documents" label="Documents" icon={FileText} />
                     </div>
                  </>
              )}
@@ -892,9 +666,8 @@ const CRM: React.FC<CRMProps> = ({
                  <>
                     <div className="px-3"><NavItem id="dashboard" label="Dashboard" icon={LayoutDashboard} /></div>
                     <div className="px-3 space-y-0.5 mt-2">
-                        <NavItem id="jobs" label="Jobs" icon={Briefcase} badge={tickets.filter(t=>t.status==='SCHEDULED').length.toString()} />
+                        <NavItem id="jobs" label="Jobs" icon={Briefcase} badge={scheduledTickets > 0 ? scheduledTickets.toString() : undefined} />
                         <NavItem id="schedule" label="Schedule" icon={CalendarIcon} />
-                        <NavItem id="documents" label="Documents" icon={FileText} />
                     </div>
                  </>
              )}
@@ -927,21 +700,9 @@ const CRM: React.FC<CRMProps> = ({
                     {tab === 'dashboard' && <DashboardView />}
                     {tab === 'dialer' && <DialerView />}
                     {tab === 'inbox' && <InboxView />}
-                    {tab === 'marketing' && <MarketingView />}
-                    {tab === 'analytics' && <AnalyticsView />}
-                    {tab === 'documents' && <DocumentsView />}
-                    {tab === 'finance' && <FinanceView />}
                     {tab === 'tasks' && <TasksView />}
                     {(tab === 'calendar' || tab === 'schedule') && <CalendarView />}
-                    {(tab === 'maintenance' || tab === 'requests' || tab === 'jobs') && <MaintenanceView />}
-                    
-                    {['settings', 'my-home'].includes(tab) && (
-                         <div className="flex flex-col items-center justify-center h-full text-slate-400 p-8 text-center animate-in fade-in duration-500">
-                            <Settings className="w-12 h-12 text-slate-300 mb-4" />
-                            <h3 className="text-xl font-bold text-slate-700 mb-2">Settings</h3>
-                            <p className="max-w-md mx-auto">Configuration options available in full version.</p>
-                        </div>
-                    )}
+                    {(tab === 'maintenance' || tab === 'jobs') && <MaintenanceView />}
 
                     {/* Leads Table for Broker (reused logic) */}
                     {tab === 'leads' && currentUser.role === 'BROKER' && (
@@ -1124,107 +885,6 @@ const CRM: React.FC<CRMProps> = ({
                 />
             )}
 
-            {showDocumentForm && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                  <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg">
-                    <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 rounded-t-xl">
-                      <div>
-                        <h2 className="text-xl font-bold text-gray-900">Upload Document</h2>
-                        <p className="text-sm text-gray-500">Add a document to the CRM</p>
-                      </div>
-                      <button
-                        onClick={() => setShowDocumentForm(false)}
-                        className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                        title="Close"
-                      >
-                        <X className="w-5 h-5 text-gray-500" />
-                      </button>
-                    </div>
-                    <form onSubmit={handleDocumentSubmit} className="p-6 space-y-4">
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-700">Document Name</label>
-                        <input
-                          type="text"
-                          name="name"
-                          required
-                          className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-black/5"
-                          value={newDocument.name || ''}
-                          onChange={handleDocumentChange}
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium text-gray-700">Category</label>
-                          <select
-                            name="category"
-                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-black/5"
-                            value={newDocument.category}
-                            onChange={handleDocumentChange}
-                          >
-                            <option value="Contracts">Contracts</option>
-                            <option value="Invoices">Invoices</option>
-                            <option value="Reports">Reports</option>
-                            <option value="Plans">Plans</option>
-                          </select>
-                        </div>
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium text-gray-700">Type</label>
-                          <select
-                            name="type"
-                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-black/5"
-                            value={newDocument.type}
-                            onChange={handleDocumentChange}
-                          >
-                            <option value="PDF">PDF</option>
-                            <option value="DOC">DOC</option>
-                            <option value="IMG">IMG</option>
-                            <option value="XLS">XLS</option>
-                          </select>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium text-gray-700">Size</label>
-                          <input
-                            type="text"
-                            name="size"
-                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-black/5"
-                            placeholder="e.g. 2.4 MB"
-                            value={newDocument.size || ''}
-                            onChange={handleDocumentChange}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium text-gray-700">Date</label>
-                          <input
-                            type="date"
-                            name="date"
-                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-black/5"
-                            value={newDocument.date || ''}
-                            onChange={handleDocumentChange}
-                          />
-                        </div>
-                      </div>
-                      <div className="pt-4 border-t border-gray-100 flex justify-end gap-3">
-                        <button
-                          type="button"
-                          onClick={() => setShowDocumentForm(false)}
-                          className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          type="submit"
-                          className="px-6 py-2 text-sm font-medium text-white bg-black hover:bg-gray-800 rounded-lg transition-colors flex items-center gap-2"
-                        >
-                          <Save className="w-4 h-4" />
-                          Save Document
-                        </button>
-                      </div>
-                    </form>
-                  </div>
-                </div>
-            )}
         </div>
       </div>
     </div>
