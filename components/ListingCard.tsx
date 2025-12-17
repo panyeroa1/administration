@@ -9,8 +9,9 @@ interface ListingCardProps {
 const ListingCard: React.FC<ListingCardProps> = ({ listing, onClick }) => {
   const [isImageLoaded, setIsImageLoaded] = useState(false);
 
-  // Mock rating generation based on ID
-  const rating = (4 + (parseInt(listing.id) % 10) / 10).toFixed(2);
+  // Stable rating generation based on ID
+  const idSeed = listing.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const rating = (4 + (idSeed % 10) / 10).toFixed(2);
 
   return (
     <div 

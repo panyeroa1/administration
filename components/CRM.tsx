@@ -14,6 +14,7 @@ import LeadForm from './LeadForm';
 import TicketForm from './TicketForm';
 import ListingForm from './ListingForm';
 import Dialer from './Dialer';
+import { buildPropertySlug } from '../utils/listingSlug';
 // WebCall component removed - tab was deleted
 
 interface CRMProps {
@@ -46,6 +47,7 @@ const CRM: React.FC<CRMProps> = ({
     tasks, onUpdateTask, onCreateTask, agents,
     callState, onCallStart, onCallEnd, inputVolume, outputVolume, onToggleRecording, isRecording, selectedAgentId, onSelectAgent
 }) => {
+  const siteBaseUrl = import.meta.env.VITE_SITE_URL || window.location.origin;
   const [tab, setTab] = useState<TabType>('dashboard');
   const [noteInput, setNoteInput] = useState('');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -790,6 +792,15 @@ const CRM: React.FC<CRMProps> = ({
                                         <div className="p-5">
                                             <div className="text-xl font-bold text-slate-900 mb-1">{prop.price}</div>
                                             <div className="text-slate-600 text-sm mb-4">{prop.address}</div>
+                                            <a
+                                                href={`${siteBaseUrl}/?listing=${encodeURIComponent(buildPropertySlug(prop))}`}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="inline-flex items-center gap-2 text-xs font-semibold text-slate-700 hover:text-slate-900"
+                                            >
+                                                View on site
+                                                <ChevronRight className="w-3 h-3" />
+                                            </a>
                                         </div>
                                     </div>
                                 ))}

@@ -7,6 +7,7 @@ import { db } from '../services/db';
 import { geminiClient } from '../services/geminiService';
 import { ApartmentSearchFilters, Listing, User } from '../types';
 import { Type } from '@google/genai';
+import { buildListingSlug, listingMatchesSlug } from '../utils/listingSlug';
 
 // --- Tool Definitions ---
 const listPropertiesTool = {
@@ -219,10 +220,25 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, currentUser }) 
     try {
         const results = await db.searchListings(currentFilters);
         setListings(results);
+        const listingParam = new URLSearchParams(window.location.search).get('listing');
+        if (listingParam) {
+            const match = results.find(listing => listingMatchesSlug(listing, listingParam));
+            if (match) setSelectedListing(match);
+        }
         return results;
     } finally {
         setIsLoadingListings(false);
     }
+  };
+
+  const updateListingUrl = (listing: Listing | null) => {
+      const url = new URL(window.location.href);
+      if (listing) {
+          url.searchParams.set('listing', buildListingSlug(listing));
+      } else {
+          url.searchParams.delete('listing');
+      }
+      window.history.replaceState({}, '', url.toString());
   };
 
   const handleFilterChange = (updates: Partial<ApartmentSearchFilters>) => {
@@ -462,7 +478,10 @@ Politely ask clarifying questions when necessary, and reassure the client if tec
                             <ListingCard 
                                 key={listing.id} 
                                 listing={listing} 
-                                onClick={(l) => setSelectedListing(l)}
+                                onClick={(l) => {
+                                    setSelectedListing(l);
+                                    updateListingUrl(l);
+                                }}
                             />
                         ))}
                     </div>
@@ -508,7 +527,10 @@ Politely ask clarifying questions when necessary, and reassure the client if tec
               listing={selectedListing} 
               currentUser={currentUser}
               onLoginRequest={onLoginClick}
-              onClose={() => setSelectedListing(null)} 
+              onClose={() => {
+                  setSelectedListing(null);
+                  updateListingUrl(null);
+              }} 
           />
       )}
     </div>
