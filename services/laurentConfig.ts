@@ -54,5 +54,74 @@ export const LAURENT_AGENT_CONFIG = {
     "hipaaEnabled": false,
     "pciEnabled": false
   },
-  "isServerUrlSecretSet": false
+  "isServerUrlSecretSet": false,
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "getClientInfo",
+        "description": "Look up client or lead information by their phone number. Use this to retrieve the caller's details from the CRM.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "phoneNumber": {
+              "type": "string",
+              "description": "The phone number of the client to look up"
+            }
+          },
+          "required": ["phoneNumber"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "scheduleFollowUp",
+        "description": "Schedule a follow-up task for a lead. Use this when the caller requests a callback or follow-up.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "leadId": {
+              "type": "string",
+              "description": "The ID of the lead to create a follow-up for"
+            },
+            "reason": {
+              "type": "string",
+              "description": "The reason or topic for the follow-up"
+            },
+            "daysFromNow": {
+              "type": "number",
+              "description": "Number of days from now to schedule the follow-up (default 1)"
+            }
+          },
+          "required": ["leadId", "reason"]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "sendFollowUpEmail",
+        "description": "Send a follow-up email to the client after the call. Only use when explicitly requested.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "leadId": {
+              "type": "string",
+              "description": "The ID of the lead to send email to"
+            },
+            "subject": {
+              "type": "string",
+              "description": "Email subject line"
+            },
+            "message": {
+              "type": "string",
+              "description": "Email body content"
+            }
+          },
+          "required": ["leadId", "subject", "message"]
+        }
+      }
+    }
+  ]
 };

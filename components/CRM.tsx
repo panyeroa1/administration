@@ -15,6 +15,7 @@ import TicketForm from './TicketForm';
 import ListingForm from './ListingForm';
 import Dialer from './Dialer';
 import { buildPropertySlug } from '../utils/listingSlug';
+import { createOutboundCall } from '../services/vapiCallService';
 // WebCall component removed - tab was deleted
 
 interface CRMProps {
@@ -47,6 +48,7 @@ const CRM: React.FC<CRMProps> = ({
     tasks, onUpdateTask, onCreateTask, agents,
     callState, onCallStart, onCallEnd, inputVolume, outputVolume, onToggleRecording, isRecording, selectedAgentId, onSelectAgent
 }) => {
+  const propertyManagerAssistantId = '42c708e0-2e4d-4684-95d7-ebe9442d9cb9';
   const siteBaseUrl = import.meta.env.VITE_SITE_URL || window.location.origin;
   const [tab, setTab] = useState<TabType>('dashboard');
   const [noteInput, setNoteInput] = useState('');
@@ -57,6 +59,8 @@ const CRM: React.FC<CRMProps> = ({
   const [showNotifications, setShowNotifications] = useState(false);
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [interactions, setInteractions] = useState<Interaction[]>([]);
+  const [renterPhone, setRenterPhone] = useState('');
+  const [isSendingToAdmin, setIsSendingToAdmin] = useState(false);
   const [filterTicketStatus, setFilterTicketStatus] = useState<'ALL' | 'OPEN' | 'SCHEDULED' | 'COMPLETED'>('ALL');
   
   // Calendar State
@@ -82,6 +86,17 @@ const CRM: React.FC<CRMProps> = ({
   const pendingTasks = tasks.filter(t => !t.completed).length;
   const openTickets = tickets.filter(t => t.status === 'OPEN').length;
   const scheduledTickets = tickets.filter(t => t.status === 'SCHEDULED').length;
+  const leadStructuredOutputs = activeLead
+    ? interactions
+        .filter((interaction) => interaction.type === 'VOICE_CALL' && interaction.leadId === activeLead.id)
+        .map((interaction) => {
+          const structuredData = interaction.metadata?.structuredData;
+          if (!structuredData) return null;
+          if (typeof structuredData === 'object' && Object.keys(structuredData).length === 0) return null;
+          return { interaction, structuredData };
+        })
+        .filter(Boolean) as { interaction: Interaction; structuredData: any }[]
+    : [];
 
   const getLeadName = (leadId?: string) => {
     if (!leadId) return 'Unknown lead';
@@ -147,6 +162,56 @@ const CRM: React.FC<CRMProps> = ({
   const refreshTickets = async () => {
       const t = await db.getTickets();
       setTickets(t);
+  };
+
+  const handleSendToAdmin = async () => {
+      const phone = renterPhone.trim();
+      if (!phone) {
+        alert('Please enter a phone number so our admin can call you.');
+        return;
+      }
+      try {
+        setIsSendingToAdmin(true);
+        const existingLead = leads.find((lead) => lead.email === currentUser.email) || null;
+        let leadId = existingLead?.id;
+
+        if (!leadId) {
+          const [firstName, ...rest] = currentUser.name.split(' ');
+          const newLead: Lead = {
+            id: crypto.randomUUID(),
+            firstName: firstName || 'Resident',
+            lastName: rest.join(' ') || 'Tenant',
+            phone,
+            email: currentUser.email,
+            status: 'New',
+            interest: 'Management',
+            lastActivity: 'Tenant requested admin callback',
+            notes: 'Tenant requested a call-back from property management.',
+            recordings: []
+          };
+          await db.createLead(newLead);
+          leadId = newLead.id;
+        } else {
+          await db.appendLeadNotes(leadId, 'Tenant requested a call-back from property management.', 'Tenant requested admin callback');
+        }
+
+        await db.createInteraction({
+          type: 'VOICE_CALL',
+          direction: 'OUTBOUND',
+          leadId,
+          content: 'Tenant requested admin call-back.',
+          metadata: { phone }
+        });
+
+        await createOutboundCall(phone, propertyManagerAssistantId);
+        setRenterPhone('');
+        alert('Thanks! Our property manager will call you shortly.');
+      } catch (error) {
+        console.error(error);
+        alert('Failed to request a call. Please try again.');
+      } finally {
+        setIsSendingToAdmin(false);
+      }
   };
 
 
@@ -238,19 +303,6 @@ const CRM: React.FC<CRMProps> = ({
                                       </div>
                                   </div>
 
-                                  <div className="space-y-1">
-                                      <div className={labelClassName}>First Sentence</div>
-                                      <div className="text-sm text-slate-700 whitespace-pre-wrap">
-                                          {selectedAgent.firstSentence || '—'}
-                                      </div>
-                                  </div>
-
-                                  <div className="space-y-1">
-                                      <div className={labelClassName}>System Prompt</div>
-                                      <div className="text-xs text-slate-600 whitespace-pre-wrap bg-slate-50 border border-slate-200 rounded-lg p-3 max-h-52 overflow-y-auto">
-                                          {selectedAgent.systemPrompt || '—'}
-                                      </div>
-                                  </div>
                               </div>
                           ) : (
                               <div className="text-sm text-slate-500">
@@ -440,6 +492,33 @@ const CRM: React.FC<CRMProps> = ({
                   <Plus className="w-4 h-4"/> New Ticket
               </button>
           </div>
+          {currentUser.role === 'RENTER' && (
+              <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm mb-6">
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                      <div>
+                          <h3 className="text-lg font-bold text-slate-800">Send To Admin</h3>
+                          <p className="text-sm text-slate-500">Need a call from property management? Leave your number.</p>
+                      </div>
+                      <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                          <input
+                              type="tel"
+                              value={renterPhone}
+                              onChange={(e) => setRenterPhone(e.target.value)}
+                              placeholder="Your phone number"
+                              className="w-full sm:w-64 px-4 py-2 rounded-lg border border-slate-200 text-sm focus:ring-2 focus:ring-slate-900/10 outline-none"
+                              aria-label="Your phone number"
+                          />
+                          <button
+                              onClick={handleSendToAdmin}
+                              disabled={isSendingToAdmin}
+                              className="bg-black 600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-black 700 disabled:opacity-60 disabled:cursor-not-allowed"
+                          >
+                              {isSendingToAdmin ? 'Sending...' : 'Send To Admin'}
+                          </button>
+                      </div>
+                  </div>
+              </div>
+          )}
           {/* ... existing implementation ... */}
            <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
               {(['ALL', 'OPEN', 'SCHEDULED', 'COMPLETED'] as const).map(status => (
@@ -860,6 +939,31 @@ const CRM: React.FC<CRMProps> = ({
                                  </div>
                              ))}
                              {activeLead.recordings.length === 0 && <p className="text-xs text-slate-400 italic">No calls yet.</p>}
+                         </div>
+                         <div className="mb-6">
+                             <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Call Insights</h4>
+                             {leadStructuredOutputs.length > 0 ? (
+                                 <div className="space-y-3">
+                                     {leadStructuredOutputs.map(({ interaction, structuredData }) => (
+                                         <div key={interaction.id || interaction.timestamp} className="bg-slate-50 p-3 rounded-lg">
+                                             <div className="flex items-center justify-between mb-2">
+                                                 <div className="text-xs font-semibold text-slate-700">Structured Output</div>
+                                                 <div className="text-[10px] text-slate-400">
+                                                     {interaction.timestamp ? new Date(interaction.timestamp).toLocaleString() : ''}
+                                                 </div>
+                                             </div>
+                                             <div className="text-xs text-slate-600 mb-2">{interaction.content}</div>
+                                             <div className="text-[11px] text-slate-600 whitespace-pre-wrap bg-white border border-slate-200 rounded-lg p-2 max-h-52 overflow-y-auto">
+                                                 {typeof structuredData === 'string'
+                                                     ? structuredData
+                                                     : JSON.stringify(structuredData, null, 2)}
+                                             </div>
+                                         </div>
+                                     ))}
+                                 </div>
+                             ) : (
+                                 <p className="text-xs text-slate-400 italic">No structured outputs yet.</p>
+                             )}
                          </div>
                          <div>
                             <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Notes</h4>

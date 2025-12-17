@@ -17,8 +17,9 @@ const getVapiConfig = () => {
   return { apiKey, assistantId, phoneNumberId };
 };
 
-export const createOutboundCall = async (customerNumber: string) => {
+export const createOutboundCall = async (customerNumber: string, assistantIdOverride?: string) => {
   const { apiKey, assistantId, phoneNumberId } = getVapiConfig();
+  const selectedAssistantId = assistantIdOverride || assistantId;
 
   const response = await fetch(`${VAPI_API_URL}/call`, {
     method: 'POST',
@@ -27,7 +28,7 @@ export const createOutboundCall = async (customerNumber: string) => {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      assistantId,
+      assistantId: selectedAssistantId,
       phoneNumberId,
       customer: { number: customerNumber },
     }),

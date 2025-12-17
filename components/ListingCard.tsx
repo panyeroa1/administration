@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Listing } from '../types';
+import { db } from '../services/db';
+import { createOutboundCall } from '../services/vapiCallService';
 
 interface ListingCardProps {
   listing: Listing;
@@ -8,10 +10,63 @@ interface ListingCardProps {
 
 const ListingCard: React.FC<ListingCardProps> = ({ listing, onClick }) => {
   const [isImageLoaded, setIsImageLoaded] = useState(false);
+  const brokerAssistantId = '6282dc43-b1a8-47e4-8493-279b3e2a12eb';
+  const propertyManagerAssistantId = '42c708e0-2e4d-4684-95d7-ebe9442d9cb9';
+  const [leadStatus, setLeadStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [leadError, setLeadError] = useState<string | null>(null);
+  const [leadForm, setLeadForm] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    status: 'New',
+    interest: 'Buying',
+    notes: ''
+  });
 
   // Stable rating generation based on ID
   const idSeed = listing.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
   const rating = (4 + (idSeed % 10) / 10).toFixed(2);
+
+  const handleLeadChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setLeadForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleLeadSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLeadStatus('saving');
+    setLeadError(null);
+
+    const userNotes = leadForm.notes.trim();
+    const baseNotes = `Requested callback for ${listing.name} (${listing.address}).`;
+    const combinedNotes = userNotes ? `${baseNotes}\n\n${userNotes}` : baseNotes;
+    const assistantId = leadForm.interest === 'Management'
+      ? propertyManagerAssistantId
+      : brokerAssistantId;
+    const newLead = {
+      id: `listing-${listing.id}-${Date.now()}`,
+      firstName: leadForm.firstName.trim(),
+      lastName: leadForm.lastName.trim(),
+      phone: leadForm.phone.trim(),
+      email: leadForm.email.trim(),
+      status: leadForm.status as 'New' | 'Contacted' | 'Qualified' | 'Lost',
+      interest: leadForm.interest as 'Buying' | 'Renting' | 'Selling' | 'Management',
+      lastActivity: `Listing inquiry: ${listing.name}`,
+      notes: combinedNotes,
+      recordings: []
+    };
+
+    try {
+      await db.createLead(newLead);
+      await createOutboundCall(newLead.phone, assistantId);
+      setLeadStatus('saved');
+      setLeadForm({ firstName: '', lastName: '', email: '', phone: '', status: 'New', interest: 'Buying', notes: '' });
+    } catch (error: any) {
+      setLeadStatus('error');
+      setLeadError(error?.message || 'Failed to submit your request.');
+    }
+  };
 
   return (
     <div 
@@ -70,6 +125,105 @@ const ListingCard: React.FC<ListingCardProps> = ({ listing, onClick }) => {
              <span className="font-semibold text-slate-900 text-sm md:text-[15px]">€{listing.price}</span>
              <span className="text-slate-500 font-light text-sm md:text-[15px]">month</span>
         </div>
+      </div>
+
+      <div
+        className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-600"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="font-semibold text-slate-800 mb-2">Request a call</div>
+        <form onSubmit={handleLeadSubmit} className="grid grid-cols-1 gap-2">
+          <input
+            name="firstName"
+            placeholder="First Name"
+            required
+            value={leadForm.firstName}
+            onChange={handleLeadChange}
+            className="w-full px-2.5 py-2 rounded-lg border border-slate-200 bg-white text-xs text-slate-800 focus:ring-2 focus:ring-slate-900/10"
+            aria-label="First name"
+          />
+          <input
+            name="lastName"
+            placeholder="Last Name"
+            required
+            value={leadForm.lastName}
+            onChange={handleLeadChange}
+            className="w-full px-2.5 py-2 rounded-lg border border-slate-200 bg-white text-xs text-slate-800 focus:ring-2 focus:ring-slate-900/10"
+            aria-label="Last name"
+          />
+          <input
+            name="email"
+            type="email"
+            placeholder="email@example.com"
+            required
+            value={leadForm.email}
+            onChange={handleLeadChange}
+            className="w-full px-2.5 py-2 rounded-lg border border-slate-200 bg-white text-xs text-slate-800 focus:ring-2 focus:ring-slate-900/10"
+            aria-label="Email"
+          />
+          <input
+            name="phone"
+            type="tel"
+            placeholder="+32 ..."
+            required
+            value={leadForm.phone}
+            onChange={handleLeadChange}
+            className="w-full px-2.5 py-2 rounded-lg border border-slate-200 bg-white text-xs text-slate-800 focus:ring-2 focus:ring-slate-900/10"
+            aria-label="Phone number"
+          />
+          <div className="grid grid-cols-2 gap-2">
+            <select
+              name="status"
+              value={leadForm.status}
+              onChange={handleLeadChange}
+              className="w-full px-2.5 py-2 rounded-lg border border-slate-200 bg-white text-xs text-slate-800 focus:ring-2 focus:ring-slate-900/10"
+              aria-label="Status"
+            >
+              <option value="New">New</option>
+              <option value="Contacted">Contacted</option>
+              <option value="Qualified">Qualified</option>
+              <option value="Lost">Lost</option>
+            </select>
+            <select
+              name="interest"
+              value={leadForm.interest}
+              onChange={handleLeadChange}
+              className="w-full px-2.5 py-2 rounded-lg border border-slate-200 bg-white text-xs text-slate-800 focus:ring-2 focus:ring-slate-900/10"
+              aria-label="Interest"
+            >
+              <option value="Buying">Buying</option>
+              <option value="Renting">Renting</option>
+              <option value="Selling">Selling</option>
+              <option value="Management">Management</option>
+            </select>
+          </div>
+          <textarea
+            name="notes"
+            rows={3}
+            placeholder="Additional details..."
+            value={leadForm.notes}
+            onChange={handleLeadChange}
+            className="w-full px-2.5 py-2 rounded-lg border border-slate-200 bg-white text-xs text-slate-800 focus:ring-2 focus:ring-slate-900/10 resize-none"
+            aria-label="Notes"
+          />
+          <button
+            type="submit"
+            disabled={leadStatus === 'saving'}
+            className="w-full bg-slate-900 text-white font-semibold py-2 rounded-lg hover:bg-slate-800 transition-colors disabled:opacity-70"
+          >
+            {leadStatus === 'saving' ? 'Submitting...' : 'Request call'}
+          </button>
+          {leadStatus === 'saved' && (
+            <div className="text-[11px] text-green-700 bg-green-50 border border-green-200 rounded-lg px-2 py-1">
+              Lead saved. We will call you shortly.
+            </div>
+          )}
+          {leadStatus === 'error' && (
+            <div className="text-[11px] text-red-600 bg-red-50 border border-red-200 rounded-lg px-2 py-1">
+              {leadError || 'Something went wrong.'}
+            </div>
+          )}
+        </form>
       </div>
     </div>
   );

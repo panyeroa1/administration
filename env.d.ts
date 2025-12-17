@@ -9,6 +9,7 @@ interface ImportMetaEnv {
   readonly VITE_VAPI_ASSISTANT_ID?: string;
   readonly VITE_VAPI_PHONE_NUMBER_ID?: string;
   readonly VITE_SITE_URL?: string;
+  readonly VITE_GOOGLE_CLIENT_ID?: string;
 }
 
 interface ImportMeta {

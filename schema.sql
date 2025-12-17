@@ -101,6 +101,20 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     avatar TEXT
 );
 
+-- Create Function: brokers_callcenter
+-- Note: return type is record via OUT parameter
+CREATE OR REPLACE FUNCTION public.brokers_callcenter(
+    argument_name TEXT,
+    OUT result TEXT
+)
+RETURNS RECORD
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    result := argument_name;
+END;
+$$;
+
 -- Enable Row Level Security (RLS)
 ALTER TABLE public.listings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.leads ENABLE ROW LEVEL SECURITY;

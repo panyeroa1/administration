@@ -32,6 +32,17 @@ export const db = {
     return data as Lead[];
   },
 
+  async getLeadById(leadId: string): Promise<Lead | null> {
+    const { data, error } = await supabase.from('leads').select('*').eq('id', leadId).single();
+    if (error || !data) {
+      if (error) {
+        console.error('DB: Fetch Lead Error', error);
+      }
+      return null;
+    }
+    return data as Lead;
+  },
+
   async updateLead(lead: Lead) {
       const { error } = await supabase.from('leads').upsert(lead);
       if (error) {
@@ -44,6 +55,23 @@ export const db = {
       const { error } = await supabase.from('leads').insert(lead);
       if (error) {
           console.error('DB: Create Lead Error', error);
+          throw error;
+      }
+  },
+
+  async appendLeadNotes(leadId: string, note: string, lastActivity?: string) {
+      const lead = await this.getLeadById(leadId);
+      if (!lead) return;
+
+      const updatedNotes = lead.notes ? `${lead.notes}\n\n${note}` : note;
+      const payload: Partial<Lead> = { notes: updatedNotes };
+      if (lastActivity) {
+        payload.lastActivity = lastActivity;
+      }
+
+      const { error } = await supabase.from('leads').update(payload).eq('id', leadId);
+      if (error) {
+          console.error('DB: Append Lead Notes Error', error);
           throw error;
       }
   },
