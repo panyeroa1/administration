@@ -9,20 +9,57 @@ import { ApartmentSearchFilters, Listing, User } from '../types';
 import { Type } from '@google/genai';
 
 // --- Tool Definitions ---
-const updateFiltersTool = {
-  name: 'updateSearchFilters',
-  description: 'Update the apartment search filters based on user request and return the number of listings found.',
+const listPropertiesTool = {
+  name: 'listProperties',
+  description: 'List available properties with optional filters.',
   parameters: {
     type: Type.OBJECT,
     properties: {
-      city: { type: Type.STRING, description: 'City name (e.g. Ieper, Ghent, Antwerp, Brussels, Leuven)' },
+      city: { type: Type.STRING, description: 'City name (e.g. Ghent, Antwerp, Brussels, Leuven)' },
       minPrice: { type: Type.NUMBER, description: 'Minimum price in Euros' },
       maxPrice: { type: Type.NUMBER, description: 'Maximum price in Euros' },
       minSize: { type: Type.NUMBER, description: 'Minimum size in square meters' },
+      maxSize: { type: Type.NUMBER, description: 'Maximum size in square meters' },
       bedrooms: { type: Type.NUMBER, description: 'Number of bedrooms' },
       petsAllowed: { type: Type.BOOLEAN, description: 'Whether pets are required' },
       type: { type: Type.STRING, enum: ['apartment', 'house', 'studio', 'villa', 'loft', 'kot', 'penthouse', 'duplex'], description: 'Type of property' },
-      sortBy: { type: Type.STRING, enum: ["price_asc", "price_desc", "size", "default", "energy_asc", "energy_desc"] }
+      sortBy: { type: Type.STRING, enum: ['price_asc', 'price_desc', 'size', 'default', 'energy_asc', 'energy_desc'] },
+      limit: { type: Type.NUMBER, description: 'Maximum number of listings to return' }
+    },
+  },
+};
+
+const findOffListPropertiesTool = {
+  name: 'findOffListProperties',
+  description: 'Search for off-list properties based on client criteria.',
+  parameters: {
+    type: Type.OBJECT,
+    properties: {
+      city: { type: Type.STRING },
+      minPrice: { type: Type.NUMBER },
+      maxPrice: { type: Type.NUMBER },
+      minSize: { type: Type.NUMBER },
+      bedrooms: { type: Type.NUMBER },
+      type: { type: Type.STRING },
+      notes: { type: Type.STRING }
+    },
+  },
+};
+
+const scheduleViewingTool = {
+  name: 'scheduleViewing',
+  description: 'Schedule a viewing with the client.',
+  parameters: {
+    type: Type.OBJECT,
+    properties: {
+      listingId: { type: Type.STRING },
+      address: { type: Type.STRING },
+      date: { type: Type.STRING, description: 'Preferred date (YYYY-MM-DD)' },
+      time: { type: Type.STRING, description: 'Preferred time' },
+      name: { type: Type.STRING },
+      phone: { type: Type.STRING },
+      email: { type: Type.STRING },
+      notes: { type: Type.STRING }
     },
   },
 };
@@ -66,13 +103,16 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, currentUser }) 
   
   // Voice Agent State
   const [isLiveActive, setIsLiveActive] = useState(false);
+  const [isRinging, setIsRinging] = useState(false);
   const [volume, setVolume] = useState(0);
   const [orbPosition, setOrbPosition] = useState({ x: window.innerWidth - 100, y: window.innerHeight - 150 });
-  const [assistantReply, setAssistantReply] = useState('Tap to call Homie');
+  const [assistantReply, setAssistantReply] = useState('Tap to call +1 (844) 484 9501');
 
   const isDragging = useRef(false);
   const dragOffset = useRef({ x: 0, y: 0 });
   const filtersRef = useRef(filters);
+  const ringTimeoutRef = useRef<number | null>(null);
+  const ringAudioRef = useRef<HTMLAudioElement | null>(null);
 
   // Sync filtersRef for tool calls
   useEffect(() => {
@@ -92,24 +132,50 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, currentUser }) 
 
     geminiClient.onClose = () => {
         setIsLiveActive(false);
-        setAssistantReply("Tap to call Homie");
+        setIsRinging(false);
+        setAssistantReply('Tap to call +1 (844) 484 9501');
         setVolume(0);
     };
 
     geminiClient.onToolCall = async (toolCalls) => {
         const responses = [];
         for (const fc of toolCalls) {
-            if (fc.name === 'updateSearchFilters') {
-                const args = fc.args as ApartmentSearchFilters;
+            if (fc.name === 'listProperties') {
+                const args = fc.args as ApartmentSearchFilters & { limit?: number };
                 const newFilters = { ...filtersRef.current, ...args };
                 setFilters(newFilters);
                 const results = await loadListings(newFilters);
+                const limit = args.limit ? Math.max(1, Math.min(args.limit, 6)) : 6;
+                const summary = results.slice(0, limit).map((listing) => ({
+                    id: listing.id,
+                    name: listing.name,
+                    address: listing.address,
+                    price: listing.price,
+                    bedrooms: listing.bedrooms,
+                    size: listing.size
+                }));
                 responses.push({
                     id: fc.id,
                     name: fc.name,
-                    response: { result: `Filters updated. Found ${results.length} listings.` }
+                    response: { result: summary }
                 });
-                setAssistantReply(`Found ${results.length} places!`);
+                setAssistantReply(`Found ${results.length} places.`);
+            } else if (fc.name === 'findOffListProperties') {
+                responses.push({
+                    id: fc.id,
+                    name: fc.name,
+                    response: { result: 'No off-list matches found in the demo data. I can follow up with options shortly.' }
+                });
+                setAssistantReply('I will check off-list options for you.');
+            } else if (fc.name === 'scheduleViewing') {
+                const args = fc.args as { date?: string; time?: string; address?: string };
+                const details = [args.address, args.date, args.time].filter(Boolean).join(' - ');
+                responses.push({
+                    id: fc.id,
+                    name: fc.name,
+                    response: { result: `Viewing request received${details ? ` (${details})` : ''}.` }
+                });
+                setAssistantReply('Viewing request received. I will confirm shortly.');
             } else if (fc.name === 'saveLeadInfo') {
                 const args = fc.args as any; // Type as any first for flexibility, but could be specific Record<string, any>
                 await db.saveLeadFromVoice(args);
@@ -125,6 +191,15 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, currentUser }) 
     };
 
     return () => {
+        if (ringTimeoutRef.current) {
+            window.clearTimeout(ringTimeoutRef.current);
+            ringTimeoutRef.current = null;
+        }
+        if (ringAudioRef.current) {
+            ringAudioRef.current.pause();
+            ringAudioRef.current.currentTime = 0;
+            ringAudioRef.current = null;
+        }
         geminiClient.disconnect();
     };
   }, []);
@@ -146,38 +221,87 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, currentUser }) 
       loadListings(newFilters);
   };
 
+  const stopRinging = () => {
+      if (ringTimeoutRef.current) {
+          window.clearTimeout(ringTimeoutRef.current);
+          ringTimeoutRef.current = null;
+      }
+      if (ringAudioRef.current) {
+          ringAudioRef.current.pause();
+          ringAudioRef.current.currentTime = 0;
+          ringAudioRef.current = null;
+      }
+      setIsRinging(false);
+  };
+
+  const connectLiveAudio = async () => {
+      try {
+          setIsLiveActive(true);
+          setAssistantReply('Connected. Beatrice is listening.');
+
+          const systemPrompt = `
+[Identity]
+You are Beatrice, a real estate broker in Belgium specializing in personalized service and off-list property searches. Your role is to seamlessly assist clients in finding both listed and unlisted properties, offering expert guidance every step of the way.
+
+[Style]
+Maintain a professional yet approachable tone, demonstrating expertise while being attentive and empathetic. Use natural pauses and fillers like "um" for a human touch, and ensure confidence and reassurance are conveyed in your speech.
+
+[Response Guidelines]
+Focus on clear, concise communication, avoiding unnecessary technical terms unless they need explaining. Ensure your responses are structured simply and include pauses to make the conversation feel natural. Balance providing information with active listening.
+
+[Task & Goals]
+1. Begin with a friendly greeting to make the caller feel at ease.
+2. Listen attentively to the client's requests, confirming their needs and interest in both listed and non-listed properties.
+3. Use probing questions to understand the client's expectations, such as location preferences and budget.
+4. Discuss and explore options beyond the available online listings using your industry network and insights.
+5. Leverage tools like 'listProperties' for current listings and 'findOffListProperties' for unlisted options, if applicable.
+6. Proceed to arrange viewings with 'scheduleViewing' or propose alternative searches if initial options are not suitable.
+
+[Error Handling / Fallback]
+Politely ask clarifying questions when necessary, and reassure the client if technical issues arise. Use phrases like "Let's look for other options" or "I'll ensure we find something that meets your needs" to maintain client confidence even if standard solutions aren't available.
+          `;
+
+          await geminiClient.connect(systemPrompt, [listPropertiesTool, findOffListPropertiesTool, scheduleViewingTool, saveLeadTool]);
+      } catch (e) {
+          console.error(e);
+          setIsLiveActive(false);
+          setAssistantReply('Error connecting.');
+      }
+  };
+
+  const startRinging = () => {
+      if (isRinging || isLiveActive) return;
+      setIsRinging(true);
+      setAssistantReply('Calling +1 (844) 484 9501');
+
+      const ringAudio = new Audio('https://botsrhere.online/deontic/callerpro/ring.mp3');
+      ringAudio.loop = true;
+      ringAudioRef.current = ringAudio;
+      ringAudio.play().catch((e) => {
+          console.error('Ring audio play failed', e);
+      });
+
+      ringTimeoutRef.current = window.setTimeout(() => {
+          stopRinging();
+          connectLiveAudio();
+      }, 9000);
+  };
+
   const toggleVoice = async () => {
+      if (isRinging) {
+          stopRinging();
+          setAssistantReply('Tap to call +1 (844) 484 9501');
+          return;
+      }
+
       if (isLiveActive) {
           geminiClient.disconnect();
           setIsLiveActive(false);
-      } else {
-          try {
-              setIsLiveActive(true);
-              setAssistantReply("Homie is listening...");
-              
-              const systemPrompt = `
-              You are 'Homie', a dynamic, funny, and helpful real estate agent.
-              
-              YOUR GOAL:
-              - Help the user find an apartment by asking questions about location, price, and needs.
-              - When the user gives criteria, you MUST use the 'updateSearchFilters' tool.
-              - After using the tool, I will give you the number of listings found. You MUST report this number to the user verbally (e.g., "I found 3 apartments!").
-              - If the user seems interested or provides their name/contact info, use 'saveLeadInfo' to save it.
-              
-              PERSONA:
-              - Friendly, slightly chaotic but competent.
-              - Use Flemish/Dutch flair in English (e.g., "Allez," "Right?", "Zeg").
-              - Occasional *cough* "sorry" in your speech.
-              - Introduce yourself immediately upon connection.
-              `;
-              
-              await geminiClient.connect(systemPrompt, [updateFiltersTool, saveLeadTool]);
-          } catch (e) {
-              console.error(e);
-              setIsLiveActive(false);
-              setAssistantReply("Error connecting.");
-          }
+          setAssistantReply('Tap to call +1 (844) 484 9501');
+          return;
       }
+
+      startRinging();
   };
 
     // --- Drag Handlers ---
@@ -349,7 +473,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, currentUser }) 
           onPointerUp={handleOrbTap}
       >
           {/* Tooltip */}
-          <div className={`absolute bottom-full mb-3 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-xs px-3 py-1.5 rounded-lg whitespace-nowrap shadow-xl opacity-90 pointer-events-none transition-all ${isLiveActive ? 'scale-100 opacity-100' : 'scale-90 opacity-0 group-hover:scale-100 group-hover:opacity-100'}`}>
+          <div className={`absolute bottom-full mb-3 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-xs px-3 py-1.5 rounded-lg whitespace-nowrap shadow-xl opacity-90 pointer-events-none transition-all ${isLiveActive || isRinging ? 'scale-100 opacity-100' : 'scale-90 opacity-0 group-hover:scale-100 group-hover:opacity-100'}`}>
                  {assistantReply}
                  <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-900"></div>
              </div>
