@@ -16,11 +16,20 @@ export default function TicketForm({ onClose, onSuccess, currentUser }: TicketFo
     description: '',
     priority: 'MEDIUM',
     propertyAddress: '',
+    phone: '+63 '
   });
+
+  const enforcePhonePrefix = (value: string) => {
+    const digits = value.replace(/\D/g, '');
+    const localDigits = digits.startsWith('63') ? digits.slice(2) : digits;
+    if (!localDigits) return '+63 ';
+    return `+63 ${localDigits}`;
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const nextValue = name === 'phone' ? enforcePhonePrefix(value) : value;
+    setFormData(prev => ({ ...prev, [name]: nextValue }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -28,6 +37,13 @@ export default function TicketForm({ onClose, onSuccess, currentUser }: TicketFo
     setLoading(true);
 
     try {
+      const phoneDigits = (formData.phone || '').replace(/\D/g, '');
+      if (phoneDigits.length <= 2) {
+        alert('Please enter a valid phone number.');
+        setLoading(false);
+        return;
+      }
+
       const newTicket: Ticket = {
         id: crypto.randomUUID(),
         ...formData as any,
@@ -92,6 +108,21 @@ export default function TicketForm({ onClose, onSuccess, currentUser }: TicketFo
               placeholder="Describe the issue in detail..."
               value={formData.description}
               onChange={handleChange}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">Phone</label>
+            <input 
+              type="tel" 
+              name="phone" 
+              title="Phone"
+              required 
+              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-black/5"
+              placeholder="+63 9xx xxx xxxx"
+              value={formData.phone || '+63 '}
+              onChange={handleChange}
+              pattern="^\\+63\\s?\\d{6,}$"
             />
           </div>
 

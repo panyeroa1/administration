@@ -103,6 +103,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, currentUser }) 
   const [filters, setFilters] = useState<ApartmentSearchFilters>({ sortBy: 'default' });
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
   const [leadModalListing, setLeadModalListing] = useState<Listing | null>(null);
+  const [headerSearch, setHeaderSearch] = useState('');
   
   // Voice Agent State
   const [isLiveActive, setIsLiveActive] = useState(false);
@@ -299,6 +300,17 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, currentUser }) 
       loadListings(newFilters);
   };
 
+  const handleHeaderSearchSubmit = (e: React.FormEvent) => {
+      e.preventDefault();
+      const query = headerSearch.trim();
+      handleFilterChange({ city: query || null });
+  };
+
+  const handleHeaderSearchClear = () => {
+      setHeaderSearch('');
+      handleFilterChange({ city: null });
+  };
+
   const stopRinging = () => {
       if (ringTimeoutRef.current) {
           window.clearTimeout(ringTimeoutRef.current);
@@ -423,17 +435,33 @@ Politely ask clarifying questions when necessary, and reassure the client if tec
             <h1 className="text-xl font-bold text-rose-500 tracking-tight hidden sm:block">Eburon<span className="text-slate-900"> Estate</span></h1>
         </div>
 
-        {/* Search Bar (Visual Only) */}
-        <div className="hidden md:flex items-center border border-gray-300 rounded-full shadow-sm hover:shadow-md transition-shadow px-4 py-2 gap-4 divide-x divide-gray-300 cursor-pointer">
-             <span className="text-sm font-medium text-slate-900 pl-2">Anywhere</span>
-             <span className="text-sm font-medium text-slate-900 pl-4">Any week</span>
-             <span className="text-sm text-slate-500 pl-4 pr-2">Add guests</span>
-             <div className="bg-rose-500 rounded-full p-2 text-white">
+        <form
+            onSubmit={handleHeaderSearchSubmit}
+            className="hidden md:flex items-center border border-gray-300 rounded-full shadow-sm hover:shadow-md transition-shadow px-4 py-2 gap-3 bg-white"
+        >
+             <input
+                type="text"
+                value={headerSearch}
+                onChange={(e) => setHeaderSearch(e.target.value)}
+                placeholder="Search city or address"
+                aria-label="Search city or address"
+                className="text-sm font-medium text-slate-900 w-64 bg-transparent outline-none"
+             />
+             {headerSearch && (
+                <button
+                    type="button"
+                    onClick={handleHeaderSearchClear}
+                    className="text-xs font-semibold text-slate-500 hover:text-slate-700"
+                >
+                    Clear
+                </button>
+             )}
+             <button type="submit" className="bg-rose-500 rounded-full p-2 text-white">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-3 h-3">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                 </svg>
-             </div>
-        </div>
+             </button>
+        </form>
 
         <div className="flex items-center gap-4">
             <button 

@@ -98,6 +98,7 @@ export interface Ticket {
   id: string;
   title: string;
   description: string;
+  phone?: string;
   status: 'OPEN' | 'SCHEDULED' | 'COMPLETED';
   priority: 'LOW' | 'MEDIUM' | 'HIGH';
   propertyId: string;

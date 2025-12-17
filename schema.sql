@@ -72,6 +72,7 @@ CREATE TABLE IF NOT EXISTS public.tickets (
     id TEXT PRIMARY KEY,
     title TEXT,
     description TEXT,
+    phone TEXT,
     status TEXT,
     priority TEXT,
     "propertyId" TEXT,
