@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Lead, Property, User, Ticket, Invoice, AgentPersona, UserRole, Document, Task, CallState } from '../types';
-import { MOCK_NOTIFICATIONS, AVAILABLE_VOICES, DEFAULT_AGENT_PERSONA } from '../constants';
+import { MOCK_NOTIFICATIONS } from '../constants';
 import { db } from '../services/db';
 import {
   User as UserIcon, Phone, Mail, Clock, MapPin, DollarSign, Home, CheckCircle,
@@ -9,8 +9,8 @@ import {
   PhoneMissed, Voicemail, LayoutDashboard, Calendar as CalendarIcon, FileText,
   Settings, Inbox as InboxIcon, Briefcase,
   Menu, ChevronLeft, ChevronDown, Wrench, HardHat, Bell, LogOut, Shield,
-  Plus, Filter, AlertCircle, Bot, Users, CheckSquare, CalendarDays,
-  Receipt, Megaphone, PieChart, BarChart3, Target, MessageSquare, Mic,
+  Plus, Filter, AlertCircle, Users, CheckSquare, CalendarDays,
+  Receipt, Megaphone, PieChart, BarChart3, Target, MessageSquare,
   Save, Download
 } from 'lucide-react';
 import LeadForm from './LeadForm';
@@ -27,14 +27,11 @@ interface CRMProps {
   onUpdateLead: (lead: Lead) => void;
   currentUser: User;
   onLogout: () => void;
-  agentPersona: AgentPersona;
-  onUpdateAgentPersona: (persona: AgentPersona) => void;
   onSwitchUser: (role: UserRole) => void;
   tasks: Task[];
   onUpdateTask: (task: Task) => void;
   onCreateTask?: (task: Task) => Promise<void>; // Optional to avoid breaking other components if any
   agents: AgentPersona[];
-  onAgentsChange: (agents: AgentPersona[]) => void;
   callState: CallState;
   onCallStart: (phoneNumber: string) => void;
   onCallEnd: () => void;
@@ -46,11 +43,11 @@ interface CRMProps {
   onSelectAgent: (agentId: string) => void;
 }
 
-type TabType = 'dialer' | 'dashboard' | 'leads' | 'properties' | 'notifications' | 'calendar' | 'documents' | 'finance' | 'marketing' | 'analytics' | 'settings' | 'maintenance' | 'requests' | 'my-home' | 'jobs' | 'schedule' | 'invoices' | 'agent-config' | 'inbox' | 'tasks';
+type TabType = 'dialer' | 'dashboard' | 'leads' | 'properties' | 'notifications' | 'calendar' | 'documents' | 'finance' | 'marketing' | 'analytics' | 'settings' | 'maintenance' | 'requests' | 'my-home' | 'jobs' | 'schedule' | 'invoices' | 'inbox' | 'tasks';
 
 const CRM: React.FC<CRMProps> = ({ 
     leads, properties, onSelectLead, selectedLeadId, onUpdateLead, currentUser, onLogout,
-    agentPersona, onUpdateAgentPersona, onSwitchUser, tasks, onUpdateTask, onCreateTask, agents, onAgentsChange,
+    onSwitchUser, tasks, onUpdateTask, onCreateTask, agents,
     callState, onCallStart, onCallEnd, inputVolume, outputVolume, onToggleRecording, isRecording, selectedAgentId, onSelectAgent
 }) => {
   const [tab, setTab] = useState<TabType>('dashboard');
@@ -430,233 +427,6 @@ const CRM: React.FC<CRMProps> = ({
           </div>
       </div>
   );
-
-  const AgentConfigView = () => {
-      // Local state for the form to handle editing before saving
-      const [editPersona, setEditPersona] = useState<AgentPersona>(agentPersona);
-      const [showAdvanced, setShowAdvanced] = useState(false);
-      const [isSaving, setIsSaving] = useState(false);
-
-      useEffect(() => {
-          setEditPersona(agentPersona);
-      }, [agentPersona]);
-
-      const handleSave = async () => {
-          setIsSaving(true);
-          const personaToSave = { ...editPersona };
-          
-          if (!personaToSave.id) {
-              personaToSave.id = `agent-${Date.now()}`;
-          }
-
-          // Persist to DB
-          await db.createAgent(personaToSave);
-          
-          // Update global list
-          const updatedAgents = [...agents];
-          const idx = updatedAgents.findIndex(a => a.id === personaToSave.id);
-          if (idx >= 0) updatedAgents[idx] = personaToSave;
-          else updatedAgents.push(personaToSave);
-          
-          onAgentsChange(updatedAgents);
-          onUpdateAgentPersona(personaToSave);
-          setIsSaving(false);
-          alert("Agent Saved Successfully!");
-      };
-
-      const handleCreateNew = () => {
-          const newAgent: AgentPersona = {
-              id: '',
-              name: 'New Agent',
-              role: 'Sales',
-              tone: 'Professional',
-              languageStyle: 'English',
-              objectives: [],
-              systemPrompt: '',
-              firstSentence: '',
-              voiceId: AVAILABLE_VOICES[0].id
-          };
-          onUpdateAgentPersona(newAgent); // Set as current to edit
-      };
-
-      const handleSelectAgent = (agent: AgentPersona) => {
-          onUpdateAgentPersona(agent);
-      };
-
-      const handleLoadPredefined = (e: React.ChangeEvent<HTMLSelectElement>) => {
-          // This should load from predefined constants (mocked here or passed)
-          // For now, we assume this is handled or we add the logic if PREDEFINED_AGENTS was imported
-          // In the full context, PREDEFINED_AGENTS is available in constants.ts
-          // We will implement if available in context, otherwise skip
-      };
-
-      return (
-      <div className="animate-in fade-in duration-500 h-[calc(100vh-140px)] flex gap-6">
-          {/* Sidebar List of Agents */}
-          <div className="w-64 bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col overflow-hidden shrink-0">
-              <div className="p-4 border-b border-slate-100 flex justify-between items-center">
-                  <h3 className="font-bold text-slate-700">Agents</h3>
-                  <button onClick={handleCreateNew} aria-label="Create new agent" className="p-1 hover:bg-slate-100 rounded-lg text-white 600">
-                      <Plus className="w-5 h-5"/>
-                  </button>
-              </div>
-              <div className="overflow-y-auto flex-1">
-                  {agents.map(agent => (
-                      <div 
-                        key={agent.id} 
-                        onClick={() => handleSelectAgent(agent)}
-                        className={`p-3 border-b border-slate-50 cursor-pointer hover:bg-slate-50 transition-colors ${agentPersona.id === agent.id ? 'bg-black 50 border-l-4 border-l-indigo-500' : 'border-l-4 border-l-transparent'}`}
-                      >
-                          <div className="font-bold text-sm text-slate-800">{agent.name}</div>
-                          <div className="text-xs text-slate-500 truncate">{agent.role}</div>
-                      </div>
-                  ))}
-              </div>
-          </div>
-
-          {/* Configuration Form */}
-          <div className="flex-1 bg-white rounded-2xl border border-slate-200 shadow-sm p-8 overflow-y-auto">
-              <div className="max-w-3xl mx-auto">
-                  
-                  {/* Quick Load Dropdown */}
-                  <div className="mb-6 flex items-center justify-end">
-                      <select 
-                        aria-label="Quick load persona"
-                        className="bg-slate-50 border border-slate-200 text-slate-600 text-sm rounded-lg p-2 focus:ring-2 focus:ring-emerald-500 outline-none"
-                        onChange={(e) => {
-                             // This relies on parent passing logic or direct import. 
-                             // Since we can't easily import PREDEFINED_AGENTS here without modifying imports, 
-                             // we'll assume the user uses the sidebar for now or implement in future.
-                        }}
-                      >
-                          <option value="">Quick Load Persona...</option>
-                          <option value="broker">Broker (Laurent)</option>
-                          <option value="sales">Sales (Sarah)</option>
-                          <option value="manager">Manager (David)</option>
-                          <option value="investor">Investor (Marcus)</option>
-                          <option value="reception">Reception (Emma)</option>
-                          <option value="recruiter">Recruiter (Jessica)</option>
-                          <option value="admin">Admin</option>
-                          <option value="tech">Tech</option>
-                          <option value="legal">Legal</option>
-                          <option value="finance">Finance</option>
-                      </select>
-                  </div>
-
-                  <div className="flex items-center justify-between mb-8">
-                      <div>
-                          <h2 className="text-2xl font-bold text-slate-800">Agent Configuration</h2>
-                          <p className="text-slate-500 text-sm">Create and manage your AI personas</p>
-                      </div>
-                      <button 
-                        onClick={handleSave}
-                        disabled={isSaving}
-                        className="bg-slate-600 text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-slate-500/20 hover:bg-slate-700 transition-all active:scale-95 flex items-center gap-2"
-                      >
-                          {isSaving ? <span className="animate-pulse">Saving...</span> : <><Save className="w-4 h-4"/> Save Agent</>}
-                      </button>
-                  </div>
-
-                  <div className="space-y-6">
-                      
-                      {/* Name */}
-                      <div>
-                          <label className="block text-sm font-bold text-slate-700 mb-2">Agent Name</label>
-                          <div className="relative">
-                               <Bot className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"/>
-                               <input 
-                                    type="text" 
-                                    value={editPersona.name}
-                                    onChange={(e) => setEditPersona({...editPersona, name: e.target.value})}
-                                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-slate-500 outline-none transition-all font-bold text-slate-900"
-                                    placeholder="e.g. Laurent De Wilde"
-                                />
-                          </div>
-                      </div>
-
-                      {/* Voice Selection */}
-                      <div>
-                          <label className="block text-sm font-bold text-slate-700 mb-2">Voice to use</label>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                              {AVAILABLE_VOICES.map(voice => (
-                                  <div 
-                                    key={voice.id}
-                                    onClick={() => setEditPersona({...editPersona, voiceId: voice.id})}
-                                    className={`p-3 rounded-xl border cursor-pointer flex items-center gap-3 transition-all ${
-                                        editPersona.voiceId === voice.id 
-                                        ? 'bg-slate-50 border-slate-500 shadow-sm' 
-                                        : 'bg-white border-slate-200 hover:border-slate-300'
-                                    }`}
-                                  >
-                                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${editPersona.voiceId === voice.id ? 'bg-slate-200 text-slate-800' : 'bg-slate-100 text-slate-500'}`}>
-                                          <Mic className="w-4 h-4"/>
-                                      </div>
-                                      <div>
-                                          <div className={`text-sm font-bold ${editPersona.voiceId === voice.id ? 'text-slate-900' : 'text-slate-700'}`}>{voice.name}</div>
-                                          <div className="text-xs text-slate-500">{voice.description}</div>
-                                      </div>
-                                  </div>
-                              ))}
-                          </div>
-                      </div>
-
-                      {/* Intro / First Sentence */}
-                      <div>
-                          <label className="block text-sm font-bold text-slate-700 mb-2">Intro (First Sentence)</label>
-                          <textarea 
-                            value={editPersona.firstSentence || ''}
-                            onChange={(e) => setEditPersona({...editPersona, firstSentence: e.target.value})}
-                            className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-slate-500 outline-none transition-all resize-none text-sm text-slate-700"
-                            rows={3}
-                            placeholder="Hi, this is [Name] calling from [Company]..."
-                          />
-                      </div>
-
-                      {/* Roles & Description (System Prompt) */}
-                      <div>
-                          <label className="block text-sm font-bold text-slate-700 mb-2">Roles and Description</label>
-                          <textarea 
-                            value={editPersona.systemPrompt || ''}
-                            onChange={(e) => setEditPersona({...editPersona, systemPrompt: e.target.value})}
-                            className="w-full h-96 p-4 bg-slate-900 text-slate-400 font-mono text-xs rounded-xl border border-slate-800 focus:border-slate-500 outline-none resize-none leading-relaxed"
-                            placeholder="You are an expert real estate broker..."
-                          />
-                      </div>
-
-                      {/* Hidden / Advanced Data */}
-                      <div>
-                          <button 
-                            onClick={() => setShowAdvanced(!showAdvanced)}
-                            className="text-xs font-bold text-slate-400 hover:text-slate-600 flex items-center gap-1"
-                          >
-                              {showAdvanced ? <ChevronDown className="w-3 h-3"/> : <ChevronRight className="w-3 h-3"/>}
-                              {showAdvanced ? 'Hide Advanced Settings' : 'Show Advanced Settings'}
-                          </button>
-                          
-                          {showAdvanced && (
-                              <div className="mt-4 p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-4">
-                                  <div>
-                                      <label className="block text-xs font-bold text-slate-500 mb-1">Model</label>
-                                      <input type="text" value={editPersona.model || 'base'} readOnly aria-label="Model" className="w-full px-3 py-2 bg-white border border-slate-200 rounded text-sm text-slate-500"/>
-                                  </div>
-                                  <div>
-                                      <label className="block text-xs font-bold text-slate-500 mb-1">Tools</label>
-                                      <input type="text" value={editPersona.tools?.join(', ') || ''} readOnly aria-label="Tools" className="w-full px-3 py-2 bg-white border border-slate-200 rounded text-sm text-slate-500"/>
-                                  </div>
-                                  <div>
-                                      <label className="block text-xs font-bold text-slate-500 mb-1">Temperature</label>
-                                      <input type="text" value="0.6" readOnly aria-label="Temperature value" className="w-full px-3 py-2 bg-white border border-slate-200 rounded text-sm text-slate-500"/>
-                                  </div>
-                              </div>
-                          )}
-                      </div>
-
-                  </div>
-              </div>
-          </div>
-      </div>
-      );
-  };
 
   const InboxView = () => (
       <div className="animate-in fade-in duration-500 h-full flex flex-col">
@@ -1092,9 +862,6 @@ const CRM: React.FC<CRMProps> = ({
                         <NavItem id="marketing" label="Marketing" icon={Megaphone} />
                         <NavItem id="analytics" label="Analytics" icon={PieChart} />
                     </div>
-                    <div className="px-3 mt-4 space-y-0.5">
-                        <NavItem id="agent-config" label="Agent Config" icon={Bot} />
-                    </div>
                 </>
              )}
              
@@ -1160,7 +927,6 @@ const CRM: React.FC<CRMProps> = ({
                     {tab === 'dashboard' && <DashboardView />}
                     {tab === 'dialer' && <DialerView />}
                     {tab === 'inbox' && <InboxView />}
-                    {tab === 'agent-config' && <AgentConfigView />}
                     {tab === 'marketing' && <MarketingView />}
                     {tab === 'analytics' && <AnalyticsView />}
                     {tab === 'documents' && <DocumentsView />}
