@@ -36,7 +36,7 @@ interface CRMProps {
   onAgentsChange: (agents: AgentPersona[]) => void;
 }
 
-type TabType = 'dashboard' | 'leads' | 'properties' | 'notifications' | 'calendar' | 'documents' | 'finance' | 'marketing' | 'analytics' | 'settings' | 'maintenance' | 'requests' | 'my-home' | 'jobs' | 'schedule' | 'invoices' | 'agent-config' | 'inbox' | 'tasks';
+type TabType = 'dialer' | 'dashboard' | 'leads' | 'properties' | 'notifications' | 'calendar' | 'documents' | 'finance' | 'marketing' | 'analytics' | 'settings' | 'maintenance' | 'requests' | 'my-home' | 'jobs' | 'schedule' | 'invoices' | 'agent-config' | 'inbox' | 'tasks';
 
 const CRM: React.FC<CRMProps> = ({ 
     leads, properties, onSelectLead, selectedLeadId, onUpdateLead, currentUser, onLogout,
@@ -223,6 +223,261 @@ const CRM: React.FC<CRMProps> = ({
   );
 
   // --- TAB VIEWS ---
+
+  const DialerView = () => {
+      const [dialerForm, setDialerForm] = useState({
+          id: '6282dc43-b1a8-47e4-8493-279b3e2a12eb',
+          orgId: '2e688723-0054-43c7-bcbb-0391c96b87c4',
+          name: 'BrokerStephen',
+          voiceId: 'Elliot',
+          voiceProvider: 'vapi',
+          model: 'gpt-5.2-chat-latest',
+          modelProvider: 'openai',
+          systemPromptTitle: 'SYSTEM CONFIGURATION: STEPHEN LERNOUT (FINAL BELGIAN GOLD)',
+          firstMessage: 'Ja, hallo met Stephen hier! <breath_soft/> Ik hoop dat ik niet stoor, maar ik bel u even op omdat ik zag dat ge interesse had in een van onze panden op de website.',
+          voicemailMessage: "Please call back when you're available.",
+          transcriberLanguage: 'nl-BE',
+          transcriberProvider: 'azure',
+          firstMessageMode: 'assistant-speaks-first',
+          backgroundSound: 'off',
+          endCallMessage: 'Goodbye.',
+          endCallFunctionEnabled: true,
+          dialKeypadFunctionEnabled: true,
+          backgroundDenoisingEnabled: true,
+          createdAt: '2025-11-11T03:02:59.076Z',
+          updatedAt: '2025-12-16T22:40:50.779Z'
+      });
+
+      const handleDialerChange = (
+        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+      ) => {
+          const { name } = e.target;
+          const target = e.target as HTMLInputElement;
+          const isCheckbox = target.type === 'checkbox';
+          setDialerForm(prev => ({
+              ...prev,
+              [name]: isCheckbox ? target.checked : e.target.value
+          }));
+      };
+
+      const inputClassName = 'w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm text-slate-800 focus:ring-2 focus:ring-black/10';
+      const labelClassName = 'text-[10px] font-bold text-slate-500 uppercase tracking-wider';
+
+      return (
+          <div className="animate-in fade-in duration-500">
+              <div className="flex items-center justify-between mb-6">
+                  <div>
+                      <h2 className="text-2xl font-bold text-slate-800">Dialer</h2>
+                      <p className="text-sm text-slate-500">Voice agent configuration and call defaults.</p>
+                  </div>
+              </div>
+              <div className="flex justify-center">
+                  <div className="w-full max-w-3xl">
+                      <div className="relative bg-slate-50 text-slate-900 rounded-[3rem] overflow-hidden shadow-2xl border-[8px] border-slate-900 ring-4 ring-slate-300">
+                          <div className="absolute top-0 left-0 right-0 h-12 flex justify-center items-start pt-3 z-10 pointer-events-none">
+                              <div className="bg-black rounded-full px-5 py-2 min-w-[100px] h-[30px]"></div>
+                          </div>
+                          <div className="px-6 pt-14 pb-8 space-y-6">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  <div className="space-y-1">
+                                      <label className={labelClassName}>Agent Name</label>
+                                      <input
+                                          name="name"
+                                          value={dialerForm.name}
+                                          onChange={handleDialerChange}
+                                          className={inputClassName}
+                                      />
+                                  </div>
+                                  <div className="space-y-1">
+                                      <label className={labelClassName}>Agent ID</label>
+                                      <input
+                                          name="id"
+                                          value={dialerForm.id}
+                                          onChange={handleDialerChange}
+                                          className={inputClassName}
+                                      />
+                                  </div>
+                                  <div className="space-y-1">
+                                      <label className={labelClassName}>Org ID</label>
+                                      <input
+                                          name="orgId"
+                                          value={dialerForm.orgId}
+                                          onChange={handleDialerChange}
+                                          className={inputClassName}
+                                      />
+                                  </div>
+                                  <div className="space-y-1">
+                                      <label className={labelClassName}>Voice ID</label>
+                                      <input
+                                          name="voiceId"
+                                          value={dialerForm.voiceId}
+                                          onChange={handleDialerChange}
+                                          className={inputClassName}
+                                      />
+                                  </div>
+                                  <div className="space-y-1">
+                                      <label className={labelClassName}>Voice Provider</label>
+                                      <input
+                                          name="voiceProvider"
+                                          value={dialerForm.voiceProvider}
+                                          onChange={handleDialerChange}
+                                          className={inputClassName}
+                                      />
+                                  </div>
+                                  <div className="space-y-1">
+                                      <label className={labelClassName}>Model</label>
+                                      <input
+                                          name="model"
+                                          value={dialerForm.model}
+                                          onChange={handleDialerChange}
+                                          className={inputClassName}
+                                      />
+                                  </div>
+                                  <div className="space-y-1">
+                                      <label className={labelClassName}>Model Provider</label>
+                                      <input
+                                          name="modelProvider"
+                                          value={dialerForm.modelProvider}
+                                          onChange={handleDialerChange}
+                                          className={inputClassName}
+                                      />
+                                  </div>
+                                  <div className="space-y-1">
+                                      <label className={labelClassName}>Transcriber Language</label>
+                                      <input
+                                          name="transcriberLanguage"
+                                          value={dialerForm.transcriberLanguage}
+                                          onChange={handleDialerChange}
+                                          className={inputClassName}
+                                      />
+                                  </div>
+                                  <div className="space-y-1">
+                                      <label className={labelClassName}>Transcriber Provider</label>
+                                      <input
+                                          name="transcriberProvider"
+                                          value={dialerForm.transcriberProvider}
+                                          onChange={handleDialerChange}
+                                          className={inputClassName}
+                                      />
+                                  </div>
+                                  <div className="space-y-1">
+                                      <label className={labelClassName}>First Message Mode</label>
+                                      <input
+                                          name="firstMessageMode"
+                                          value={dialerForm.firstMessageMode}
+                                          onChange={handleDialerChange}
+                                          className={inputClassName}
+                                      />
+                                  </div>
+                                  <div className="space-y-1">
+                                      <label className={labelClassName}>Background Sound</label>
+                                      <input
+                                          name="backgroundSound"
+                                          value={dialerForm.backgroundSound}
+                                          onChange={handleDialerChange}
+                                          className={inputClassName}
+                                      />
+                                  </div>
+                                  <div className="space-y-1">
+                                      <label className={labelClassName}>End Call Message</label>
+                                      <input
+                                          name="endCallMessage"
+                                          value={dialerForm.endCallMessage}
+                                          onChange={handleDialerChange}
+                                          className={inputClassName}
+                                      />
+                                  </div>
+                                  <div className="space-y-1">
+                                      <label className={labelClassName}>Created At</label>
+                                      <input
+                                          name="createdAt"
+                                          value={dialerForm.createdAt}
+                                          onChange={handleDialerChange}
+                                          className={inputClassName}
+                                      />
+                                  </div>
+                                  <div className="space-y-1">
+                                      <label className={labelClassName}>Updated At</label>
+                                      <input
+                                          name="updatedAt"
+                                          value={dialerForm.updatedAt}
+                                          onChange={handleDialerChange}
+                                          className={inputClassName}
+                                      />
+                                  </div>
+                              </div>
+
+                              <div className="space-y-1">
+                                  <label className={labelClassName}>System Prompt Label</label>
+                                  <input
+                                      name="systemPromptTitle"
+                                      value={dialerForm.systemPromptTitle}
+                                      onChange={handleDialerChange}
+                                      className={inputClassName}
+                                  />
+                              </div>
+
+                              <div className="space-y-1">
+                                  <label className={labelClassName}>First Message</label>
+                                  <textarea
+                                      name="firstMessage"
+                                      value={dialerForm.firstMessage}
+                                      onChange={handleDialerChange}
+                                      rows={3}
+                                      className={`${inputClassName} resize-none`}
+                                  />
+                              </div>
+
+                              <div className="space-y-1">
+                                  <label className={labelClassName}>Voicemail Message</label>
+                                  <textarea
+                                      name="voicemailMessage"
+                                      value={dialerForm.voicemailMessage}
+                                      onChange={handleDialerChange}
+                                      rows={2}
+                                      className={`${inputClassName} resize-none`}
+                                  />
+                              </div>
+
+                              <div className="flex flex-wrap gap-4 text-xs text-slate-600">
+                                  <label className="flex items-center gap-2">
+                                      <input
+                                          type="checkbox"
+                                          name="endCallFunctionEnabled"
+                                          checked={dialerForm.endCallFunctionEnabled}
+                                          onChange={handleDialerChange}
+                                          className="h-4 w-4 rounded border-slate-300 text-black focus:ring-black"
+                                      />
+                                      End Call Function Enabled
+                                  </label>
+                                  <label className="flex items-center gap-2">
+                                      <input
+                                          type="checkbox"
+                                          name="dialKeypadFunctionEnabled"
+                                          checked={dialerForm.dialKeypadFunctionEnabled}
+                                          onChange={handleDialerChange}
+                                          className="h-4 w-4 rounded border-slate-300 text-black focus:ring-black"
+                                      />
+                                      Dial Keypad Function Enabled
+                                  </label>
+                                  <label className="flex items-center gap-2">
+                                      <input
+                                          type="checkbox"
+                                          name="backgroundDenoisingEnabled"
+                                          checked={dialerForm.backgroundDenoisingEnabled}
+                                          onChange={handleDialerChange}
+                                          className="h-4 w-4 rounded border-slate-300 text-black focus:ring-black"
+                                      />
+                                      Background Denoising Enabled
+                                  </label>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      );
+  };
 
   const DashboardView = () => (
       <div className="animate-in fade-in duration-500">
@@ -894,6 +1149,7 @@ const CRM: React.FC<CRMProps> = ({
         >
              {currentUser.role === 'BROKER' && (
                 <>
+                    <div className="px-3"><NavItem id="dialer" label="Dialer" icon={Phone} /></div>
                     <div className="px-3"><NavItem id="dashboard" label="Dashboard" icon={LayoutDashboard} /></div>
                     <div className="px-3"><NavItem id="inbox" label="Inbox" icon={InboxIcon} /></div>
                     <SectionHeader label="Business" />
@@ -977,6 +1233,7 @@ const CRM: React.FC<CRMProps> = ({
             <div className={`flex-1 min-w-0 overflow-y-auto no-scrollbar p-4 md:p-8 transition-all duration-300 ${activeLead && currentUser.role === 'BROKER' && tab === 'leads' ? 'hidden lg:block' : 'block'}`}>
                 <div className="max-w-7xl mx-auto h-full">
                     {tab === 'dashboard' && <DashboardView />}
+                    {tab === 'dialer' && <DialerView />}
                     {tab === 'inbox' && <InboxView />}
                     {tab === 'agent-config' && <AgentConfigView />}
                     {tab === 'marketing' && <MarketingView />}

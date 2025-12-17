@@ -432,26 +432,6 @@ const App: React.FC = () => {
                     onAgentsChange={setAgents}
                 />
             </div>
-            <div className='w-[420px] h-full border-l border-slate-200 bg-white shadow-2xl relative z-40 p-8 flex items-center justify-center shrink-0'>
-                <div className='w-[360px] h-[720px] transition-all'>
-                    <Dialer 
-                        callState={callState}
-                        onCallStart={startCall}
-                        onCallEnd={handleEndCall}
-                        activeLeadName={activeLead ? `${activeLead.firstName} ${activeLead.lastName}` : undefined}
-                        activeLeadPhone={activeLead?.phone}
-                        inputVolume={audioVols.in}
-                        outputVolume={audioVols.out}
-                        onToggleRecording={toggleRecording}
-                        isRecording={isRecording}
-                        leads={leads}
-                        onLeadSelected={(lead) => handleLeadSelect(lead)}
-                        agents={agents}
-                        selectedAgentId={agentPersona.id || 'default'}
-                        onSelectAgent={handleSelectAgent}
-                    />
-                </div>
-            </div>
         </>
       )}
 
