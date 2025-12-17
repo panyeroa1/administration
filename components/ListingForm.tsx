@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Listing } from '../types';
 import { db } from '../services/db';
 import { X, Upload, Save } from 'lucide-react';
@@ -10,6 +10,9 @@ interface ListingFormProps {
 
 export default function ListingForm({ onClose, onSuccess }: ListingFormProps) {
   const [loading, setLoading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [imageError, setImageError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [formData, setFormData] = useState<Partial<Listing>>({
     name: '',
     address: '',
@@ -20,7 +23,7 @@ export default function ListingForm({ onClose, onSuccess }: ListingFormProps) {
     description: '',
     energyClass: 'A',
     petsAllowed: false,
-    imageUrls: ['']
+    imageUrls: []
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -36,14 +39,55 @@ export default function ListingForm({ onClose, onSuccess }: ListingFormProps) {
     }
   };
 
-  const handleImageChange = (index: number, value: string) => {
-    const newImages = [...(formData.imageUrls || [])];
-    newImages[index] = value;
-    setFormData(prev => ({ ...prev, imageUrls: newImages }));
+  const handleFiles = async (files: FileList | File[]) => {
+    const fileArray = Array.from(files);
+    const imageFiles = fileArray.filter((file) => file.type.startsWith('image/'));
+    if (imageFiles.length === 0) {
+      setImageError('Please upload image files only.');
+      return;
+    }
+
+    setImageError(null);
+
+    try {
+      const dataUrls = await Promise.all(
+        imageFiles.map(
+          (file) =>
+            new Promise<string>((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = () => resolve(reader.result as string);
+              reader.onerror = () => reject(new Error('Failed to read image.'));
+              reader.readAsDataURL(file);
+            })
+        )
+      );
+
+      setFormData((prev) => ({
+        ...prev,
+        imageUrls: [...(prev.imageUrls || []), ...dataUrls]
+      }));
+    } catch (error) {
+      console.error('Failed to read image files:', error);
+      setImageError('Failed to read one or more images.');
+    }
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setFormData((prev) => {
+      const nextImages = [...(prev.imageUrls || [])];
+      nextImages.splice(index, 1);
+      return { ...prev, imageUrls: nextImages };
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!formData.imageUrls || formData.imageUrls.length === 0) {
+      setImageError('Please add at least one image.');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -202,18 +246,76 @@ export default function ListingForm({ onClose, onSuccess }: ListingFormProps) {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">Main Image URL</label>
-            <div className="flex gap-2">
-                <input 
-                    type="url" 
-                    className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-black/5"
-                    placeholder="https://..."
-                    value={formData.imageUrls?.[0] || ''}
-                    onChange={(e) => handleImageChange(0, e.target.value)}
-                />
+            <label className="text-sm font-medium text-gray-700">Listing Images</label>
+            <div
+              className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+                isDragging ? 'border-black bg-gray-50' : 'border-gray-200'
+              }`}
+              onDragEnter={(e) => {
+                e.preventDefault();
+                setIsDragging(true);
+              }}
+              onDragOver={(e) => {
+                e.preventDefault();
+                setIsDragging(true);
+              }}
+              onDragLeave={(e) => {
+                e.preventDefault();
+                setIsDragging(false);
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                setIsDragging(false);
+                if (e.dataTransfer.files) {
+                  handleFiles(e.dataTransfer.files);
+                }
+              }}
+            >
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                onChange={(e) => {
+                  if (e.target.files) {
+                    handleFiles(e.target.files);
+                    e.target.value = '';
+                  }
+                }}
+              />
+              <div className="flex flex-col items-center gap-2 text-gray-600">
+                <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+                  <Upload className="w-5 h-5" />
+                </div>
+                <div className="text-sm font-medium">Drag and drop images here</div>
+                <div className="text-xs text-gray-500">or</div>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="px-3 py-1.5 text-xs font-medium text-gray-700 border border-gray-200 rounded-md hover:bg-gray-50"
+                >
+                  Browse files
+                </button>
+              </div>
             </div>
-            {formData.imageUrls?.[0] && (
-                <img src={formData.imageUrls[0]} alt="Preview" className="h-32 w-full object-cover rounded-lg mt-2" />
+            {imageError && <p className="text-xs text-red-600">{imageError}</p>}
+            {formData.imageUrls && formData.imageUrls.length > 0 && (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {formData.imageUrls.map((url, index) => (
+                  <div key={`${url}-${index}`} className="relative group h-24 rounded-lg overflow-hidden border border-gray-200">
+                    <img src={url} alt={`Listing ${index + 1}`} className="h-full w-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveImage(index)}
+                      className="absolute top-2 right-2 bg-black/70 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      aria-label="Remove image"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
 
