@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS public.tasks (
     priority TEXT
 );
 
--- Create Agents Table (for Vapi Personas)
+-- Create Agents Table (for Eburon AI Personas)
 CREATE TABLE IF NOT EXISTS public.agents (
     id TEXT PRIMARY KEY,
     name TEXT,

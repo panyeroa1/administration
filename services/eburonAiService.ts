@@ -3,7 +3,7 @@ import { GoogleGenAI, LiveServerMessage, Modality } from '@google/genai';
 import { createPcmBlob, decode, decodeAudioData } from './audioUtils';
 import { LAURENT_SYSTEM_PROMPT } from '../constants';
 
-export class GeminiLiveClient {
+export class EburonAiLiveClient {
   private ai: GoogleGenAI | null = null;
   private sessionPromise: Promise<any> | null = null;
   private inputAudioContext: AudioContext | null = null;
@@ -31,7 +31,7 @@ export class GeminiLiveClient {
     this.disconnect(); // Clean up existing
 
     // Initialize AI Client here to ensure we get the latest process.env.API_KEY
-    const apiKey = import.meta.env.VITE_GEMINI_API_KEY || (process.env.API_KEY || '');
+    const apiKey = import.meta.env.VITE_EBURON_AI_API_KEY || (process.env.API_KEY || '');
     if (!apiKey) {
         console.error("API_KEY is missing in env");
     }
@@ -61,11 +61,11 @@ export class GeminiLiveClient {
         onopen: this.handleOpen.bind(this),
         onmessage: this.handleMessage.bind(this),
         onerror: (e: ErrorEvent) => {
-            console.error('Gemini Error:', e);
+            console.error('Eburon AI Error:', e);
             // If the error is network related, it might be due to API Key or firewall
         },
         onclose: (e: CloseEvent) => {
-            console.log('Gemini Session Closed', e);
+            console.log('Eburon AI Session Closed', e);
             if(this.onClose) this.onClose();
         },
       },
@@ -86,7 +86,7 @@ export class GeminiLiveClient {
   }
 
   private handleOpen() {
-    console.log('Gemini Live Connected');
+    console.log('Eburon AI Live Connected');
     
     // Ensure contexts are running (needed for some browsers)
     if (this.inputAudioContext && this.inputAudioContext.state === 'suspended') {
@@ -261,4 +261,4 @@ export class GeminiLiveClient {
   }
 }
 
-export const geminiClient = new GeminiLiveClient();
+export const eburonAiClient = new EburonAiLiveClient();

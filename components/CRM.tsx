@@ -15,7 +15,7 @@ import TicketForm from './TicketForm';
 import ListingForm from './ListingForm';
 import Dialer from './Dialer';
 import { buildPropertySlug } from '../utils/listingSlug';
-import { createOutboundCall } from '../services/vapiCallService';
+import { createOutboundCall } from '../services/eburonCallService';
 // WebCall component removed - tab was deleted
 
 interface CRMProps {

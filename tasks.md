@@ -97,7 +97,7 @@ START LOG
 
 Timestamp: 2025-12-16 22:05
 Current behavior or state:
-- API keys (Supabase, Vapi, Gemini) are hardcoded in source files.
+- API keys (Supabase, Eburon, Eburon AI) are hardcoded in source files.
 - Security risk if repo is public.
 
 Plan and scope for this task:
@@ -123,10 +123,10 @@ END LOG
 
 Timestamp: 2025-12-16 22:15
 Summary of what actually changed:
-- Created '.env' file with Supabase and Gemini API keys.
-- REMOVED Vapi configuration as it is not needed for this project (per user instruction).
-- Updated 'supabaseClient.ts' and 'services/geminiService.ts' to use 'import.meta.env.*'.
-- Updated 'constants.ts' to remove Vapi exports.
+- Created '.env' file with Supabase and Eburon AI API keys.
+- REMOVED legacy third-party configuration as it is not needed for this project (per user instruction).
+- Updated 'supabaseClient.ts' and 'services/eburonAiService.ts' to use 'import.meta.env.*'.
+- Updated 'constants.ts' to remove legacy exports.
 - Added '.env' to '.gitignore'.
 
 Files actually modified:
@@ -134,16 +134,16 @@ Files actually modified:
 - .gitignore
 - supabaseClient.ts
 - constants.ts
-- services/geminiService.ts
+- services/eburonAiService.ts
 - tasks.md
 
 How it was tested:
 - Manual code review.
-- Verified Vapi references removed from constants.
+- Verified legacy references removed from constants.
 - App build/start verification (implicit).
 
 Test result:
-- PASS: Credentials secured and unused Vapi code removed.
+- PASS: Credentials secured and unused legacy code removed.
 
 ------------------------------------------------------------
 

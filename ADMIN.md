@@ -13,7 +13,7 @@ The application is built as a **Voice-First SPA (Single Page Application)** usin
 
 - **Frontend:** React + Vite + Tailwind CSS (High performance, low latency).
 - **Backend/Data:** Supabase (PostgreSQL, Auth, Realtime, Storage).
-- **AI Core:** Google Gemini (Multimodal Live API) for real-time conversation and reasoning.
+- **AI Core:** Eburon AI (Multimodal Live API) for real-time conversation and reasoning.
 - **Telephony:** WebRTC / SIP integration (handled via client-side audio processing).
 
 ### System Context (Mermaid)
@@ -22,7 +22,7 @@ The application is built as a **Voice-First SPA (Single Page Application)** usin
 graph TD
     User((Broker/Admin)) -->|Web Interface| App[React App]
     App -->|Data & Auth| Supabase[Supabase Platform]
-    App -->|Voice/Video| Gemini[Gemini Multimodal Live API]
+    App -->|Voice/Video| EburonAI[Eburon AI Multimodal Live API]
     
     subgraph Supabase
         Auth[Authentication]
@@ -32,8 +32,8 @@ graph TD
     end
 
     subgraph "AI Agents"
-        Gemini -->|Tools| DB
-        Gemini -->|Context| Browser[Client State]
+        EburonAI -->|Tools| DB
+        EburonAI -->|Context| Browser[Client State]
     end
 ```
 
@@ -73,7 +73,7 @@ The schema is designed to track the lifecycle of a **Lead** becoming a **Tenant/
 
 - [ ] **AI-Driven Lead Processing (Edge Function):**
   - *Trigger:* New entry in `leads` table.
-  - *Action:* Call Gemini to score the lead based on initial data -> Update `score` field.
+  - *Action:* Call Eburon AI to score the lead based on initial data -> Update `score` field.
 - [ ] **Automated Task Generation:**
   - *Logic:* If `interactions.outcome` == 'follow_up', auto-create a `task` for the next business day.
 - [ ] **Notification System:**

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Listing, User } from '../types';
 import { db } from '../services/db';
-import { createOutboundCall } from '../services/vapiCallService';
+import { createOutboundCall } from '../services/eburonCallService';
 
 interface ListingDetailsProps {
   listing: Listing;
