@@ -9,7 +9,9 @@ import {
   PhoneMissed, Voicemail, LayoutDashboard, Calendar as CalendarIcon, FileText,
   Settings, Inbox as InboxIcon, Briefcase,
   Menu, ChevronLeft, ChevronDown, Wrench, HardHat, Bell, LogOut, Shield,
-  Plus, Filter, AlertCircle, Bot, Users, CheckSquare, CalendarDays
+  Plus, Filter, AlertCircle, Bot, Users, CheckSquare, CalendarDays,
+  Receipt, Megaphone, PieChart, BarChart3, Target, MessageSquare, Mic,
+  Save, Download
 } from 'lucide-react';
 import LeadForm from './LeadForm';
 import TicketForm from './TicketForm';
