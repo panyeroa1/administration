@@ -1,5 +1,6 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { Phone } from 'lucide-react';
 import ListingCard from './ListingCard';
 import ListingDetails from './ListingDetails';
 import { db } from '../services/db';
@@ -67,7 +68,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, currentUser }) 
   const [isLiveActive, setIsLiveActive] = useState(false);
   const [volume, setVolume] = useState(0);
   const [orbPosition, setOrbPosition] = useState({ x: window.innerWidth - 100, y: window.innerHeight - 150 });
-  const [assistantReply, setAssistantReply] = useState('Tap to ask Homie');
+  const [assistantReply, setAssistantReply] = useState('Tap to call Homie');
 
   const isDragging = useRef(false);
   const dragOffset = useRef({ x: 0, y: 0 });
@@ -91,7 +92,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, currentUser }) 
 
     geminiClient.onClose = () => {
         setIsLiveActive(false);
-        setAssistantReply("Tap to ask Homie");
+        setAssistantReply("Tap to call Homie");
         setVolume(0);
     };
 
@@ -335,7 +336,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, currentUser }) 
             </div>
       </main>
 
-      {/* Floating Orb */}
+      {/* Floating Call Button */}
       <div 
           className="fixed z-50 touch-none cursor-grab active:cursor-grabbing group"
           style={{ 
@@ -353,26 +354,18 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, currentUser }) 
                  <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-900"></div>
              </div>
 
-          <div className="relative flex items-center justify-center w-[60px] h-[60px]">
-              
-              {/* Connecting Ring */}
+          <div className="relative flex items-center justify-center w-14 h-14">
               {isLiveActive && (
-                  <div className="absolute inset-[-4px] rounded-full border-2 border-cyan-400 border-dashed animate-spin"></div>
+                  <div className="absolute inset-[-6px] rounded-full border-2 border-emerald-400/70 border-dashed animate-spin"></div>
               )}
-
-              {/* Image Orb */}
-              <img 
-                  src="https://cdnb.artstation.com/p/assets/images/images/044/950/613/original/cas-mysterious-orb.gif?1641561498"
-                  alt="Homie Orb"
-                  className={`
-                     w-full h-full rounded-full object-cover shadow-2xl transition-transform duration-100 ease-out
-                     ${!isLiveActive ? 'hover:scale-105' : ''}
-                  `}
+              <div
+                  className={`relative flex items-center justify-center w-full h-full rounded-full bg-gradient-to-br from-emerald-400 to-emerald-700 text-white shadow-2xl transition-transform duration-100 ease-out ${!isLiveActive ? 'hover:scale-105' : ''}`}
                   style={{
-                      transform: isLiveActive ? `scale(${1 + volume * 0.5})` : 'scale(1)'
+                      transform: isLiveActive ? `scale(${1 + volume * 0.4})` : 'scale(1)'
                   }}
-                  draggable={false}
-              />
+              >
+                  <Phone className="w-6 h-6" />
+              </div>
           </div>
       </div>
 
