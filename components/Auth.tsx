@@ -17,6 +17,23 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hoveredRole, setHoveredRole] = useState<UserRole | null>(null);
+
+  const roleDashboards: Record<UserRole, string> = {
+    BROKER: 'Broker Dashboard',
+    OWNER: 'Owner Dashboard',
+    RENTER: 'Renter Dashboard',
+    CONTRACTOR: 'Contractor Dashboard'
+  };
+
+  const handleAdminPrefill = () => {
+    setMode('signup');
+    setError(null);
+    setName('Admin');
+    setEmail('admin@eburon.ai');
+    setPassword('');
+    setRole('BROKER');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -195,10 +212,13 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
               </label>
               <div className="grid grid-cols-1 gap-3">
                 {(['BROKER', 'OWNER', 'RENTER', 'CONTRACTOR'] as UserRole[]).map((r) => (
-                  <div 
+                  <button
                     key={r}
+                    type="button"
                     onClick={() => setRole(r)}
-                    className={`relative rounded-xl border p-4 flex cursor-pointer focus:outline-none transition-all ${
+                    onMouseEnter={() => setHoveredRole(r)}
+                    onMouseLeave={() => setHoveredRole(null)}
+                    className={`group relative rounded-xl border p-4 flex cursor-pointer focus:outline-none transition-all ${
                       role === r 
                         ? "bg-slate-900 text-white border-slate-900 ring-1 ring-slate-900" 
                         : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"
@@ -217,9 +237,32 @@ const Auth: React.FC<AuthProps> = ({ onLogin }) => {
                             </span>
                         </div>
                     </div>
-                  </div>
+                    <div className={`ml-auto flex items-center gap-3 ${role === r ? "text-white" : "text-slate-400"}`}>
+                        <div className={`flex items-center justify-center h-9 w-9 rounded-lg ${role === r ? "bg-white/15" : "bg-slate-100"}`}>
+                            {getRoleIcon(r)}
+                        </div>
+                        <span className={`text-xs font-semibold transition-opacity ${
+                            hoveredRole === r ? 'opacity-100' : 'opacity-0'
+                        } ${role === r ? 'text-slate-100' : 'text-slate-600'}`}>
+                            {roleDashboards[r]}
+                        </span>
+                    </div>
+                  </button>
                 ))}
               </div>
+              <div className="mt-2 text-xs text-slate-500">
+                {roleDashboards[hoveredRole || role]}
+              </div>
+            </div>
+
+            <div>
+              <button
+                type="button"
+                onClick={handleAdminPrefill}
+                className="w-full flex justify-center py-2.5 px-4 border border-slate-200 rounded-xl shadow-sm text-sm font-medium text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-200 transition-all"
+              >
+                Use admin@eburon.ai
+              </button>
             </div>
 
             <div>
