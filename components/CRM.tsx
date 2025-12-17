@@ -287,8 +287,9 @@ const CRM: React.FC<CRMProps> = ({
                       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-6">
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               <div className="space-y-1">
-                                  <label className={labelClassName}>Agent Name</label>
+                                  <label htmlFor="dialer-agent-name" className={labelClassName}>Agent Name</label>
                                   <input
+                                      id="dialer-agent-name"
                                       name="name"
                                       value={dialerForm.name}
                                       onChange={handleDialerChange}
@@ -296,118 +297,11 @@ const CRM: React.FC<CRMProps> = ({
                                   />
                               </div>
                               <div className="space-y-1">
-                                  <label className={labelClassName}>Agent ID</label>
+                                  <label htmlFor="dialer-agent-id" className={labelClassName}>Agent ID</label>
                                   <input
+                                      id="dialer-agent-id"
                                       name="id"
                                       value={dialerForm.id}
-                                      onChange={handleDialerChange}
-                                      className={inputClassName}
-                                  />
-                              </div>
-                              <div className="space-y-1">
-                                  <label className={labelClassName}>Org ID</label>
-                                  <input
-                                      name="orgId"
-                                      value={dialerForm.orgId}
-                                      onChange={handleDialerChange}
-                                      className={inputClassName}
-                                  />
-                              </div>
-                              <div className="space-y-1">
-                                  <label className={labelClassName}>Voice ID</label>
-                                  <input
-                                      name="voiceId"
-                                      value={dialerForm.voiceId}
-                                      onChange={handleDialerChange}
-                                      className={inputClassName}
-                                  />
-                              </div>
-                              <div className="space-y-1">
-                                  <label className={labelClassName}>Voice Provider</label>
-                                  <input
-                                      name="voiceProvider"
-                                      value={dialerForm.voiceProvider}
-                                      onChange={handleDialerChange}
-                                      className={inputClassName}
-                                  />
-                              </div>
-                              <div className="space-y-1">
-                                  <label className={labelClassName}>Model</label>
-                                  <input
-                                      name="model"
-                                      value={dialerForm.model}
-                                      onChange={handleDialerChange}
-                                      className={inputClassName}
-                                  />
-                              </div>
-                              <div className="space-y-1">
-                                  <label className={labelClassName}>Model Provider</label>
-                                  <input
-                                      name="modelProvider"
-                                      value={dialerForm.modelProvider}
-                                      onChange={handleDialerChange}
-                                      className={inputClassName}
-                                  />
-                              </div>
-                              <div className="space-y-1">
-                                  <label className={labelClassName}>Transcriber Language</label>
-                                  <input
-                                      name="transcriberLanguage"
-                                      value={dialerForm.transcriberLanguage}
-                                      onChange={handleDialerChange}
-                                      className={inputClassName}
-                                  />
-                              </div>
-                              <div className="space-y-1">
-                                  <label className={labelClassName}>Transcriber Provider</label>
-                                  <input
-                                      name="transcriberProvider"
-                                      value={dialerForm.transcriberProvider}
-                                      onChange={handleDialerChange}
-                                      className={inputClassName}
-                                  />
-                              </div>
-                              <div className="space-y-1">
-                                  <label className={labelClassName}>First Message Mode</label>
-                                  <input
-                                      name="firstMessageMode"
-                                      value={dialerForm.firstMessageMode}
-                                      onChange={handleDialerChange}
-                                      className={inputClassName}
-                                  />
-                              </div>
-                              <div className="space-y-1">
-                                  <label className={labelClassName}>Background Sound</label>
-                                  <input
-                                      name="backgroundSound"
-                                      value={dialerForm.backgroundSound}
-                                      onChange={handleDialerChange}
-                                      className={inputClassName}
-                                  />
-                              </div>
-                              <div className="space-y-1">
-                                  <label className={labelClassName}>End Call Message</label>
-                                  <input
-                                      name="endCallMessage"
-                                      value={dialerForm.endCallMessage}
-                                      onChange={handleDialerChange}
-                                      className={inputClassName}
-                                  />
-                              </div>
-                              <div className="space-y-1">
-                                  <label className={labelClassName}>Created At</label>
-                                  <input
-                                      name="createdAt"
-                                      value={dialerForm.createdAt}
-                                      onChange={handleDialerChange}
-                                      className={inputClassName}
-                                  />
-                              </div>
-                              <div className="space-y-1">
-                                  <label className={labelClassName}>Updated At</label>
-                                  <input
-                                      name="updatedAt"
-                                      value={dialerForm.updatedAt}
                                       onChange={handleDialerChange}
                                       className={inputClassName}
                                   />
@@ -415,8 +309,9 @@ const CRM: React.FC<CRMProps> = ({
                           </div>
 
                           <div className="space-y-1">
-                              <label className={labelClassName}>System Prompt Label</label>
+                              <label htmlFor="dialer-system-prompt" className={labelClassName}>System Prompt Label</label>
                               <input
+                                  id="dialer-system-prompt"
                                   name="systemPromptTitle"
                                   value={dialerForm.systemPromptTitle}
                                   onChange={handleDialerChange}
@@ -425,8 +320,9 @@ const CRM: React.FC<CRMProps> = ({
                           </div>
 
                           <div className="space-y-1">
-                              <label className={labelClassName}>First Message</label>
+                              <label htmlFor="dialer-first-message" className={labelClassName}>First Message</label>
                               <textarea
+                                  id="dialer-first-message"
                                   name="firstMessage"
                                   value={dialerForm.firstMessage}
                                   onChange={handleDialerChange}
@@ -436,8 +332,9 @@ const CRM: React.FC<CRMProps> = ({
                           </div>
 
                           <div className="space-y-1">
-                              <label className={labelClassName}>Voicemail Message</label>
+                              <label htmlFor="dialer-voicemail-message" className={labelClassName}>Voicemail Message</label>
                               <textarea
+                                  id="dialer-voicemail-message"
                                   name="voicemailMessage"
                                   value={dialerForm.voicemailMessage}
                                   onChange={handleDialerChange}

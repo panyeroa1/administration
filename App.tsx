@@ -11,6 +11,7 @@ import { Download, Save, Trash2, X, AlertCircle, Loader2, Phone, LayoutDashboard
 import { db } from './services/db';
 import { DEFAULT_AGENT_PERSONA, generateSystemPrompt } from './constants';
 import { supabase, isConfigured } from './supabaseClient';
+import { createOutboundCall } from './services/vapiCallService';
 
 interface PendingRec {
   url: string;
@@ -200,8 +201,11 @@ const App: React.FC = () => {
   };
 
   const startCall = async (number: string) => {
+    if (!number.trim()) return;
+
     // 1. Set Ringing State
     setCallState(CallState.RINGING);
+    setCurrentCallId(null);
     setPendingRecording(null); // Reset prev recording
     
     // 2. Play Ringtone (Non-blocking with robust error handling)
@@ -217,9 +221,25 @@ const App: React.FC = () => {
         }
     });
 
-    // Calls are now handled by the embedded app.eburon.ai iframe
-    // This function is kept for compatibility but doesn't initiate external calls
-    console.log('Call would be initiated to:', number);
+    try {
+        const call = await createOutboundCall(number);
+        if (call?.id) {
+            setCurrentCallId(call.id);
+        }
+    } catch (error) {
+        console.error('Failed to start Vapi call:', error);
+        if (ringtoneRef.current) {
+            ringtoneRef.current.pause();
+            ringtoneRef.current = null;
+        }
+        if (ringTimeoutRef.current) {
+            clearTimeout(ringTimeoutRef.current);
+            ringTimeoutRef.current = null;
+        }
+        setCallState(CallState.ERROR);
+        setTimeout(() => setCallState(CallState.IDLE), 2000);
+        return;
+    }
     
     // Simulate ringing for 3 seconds then go active
     ringTimeoutRef.current = setTimeout(() => {

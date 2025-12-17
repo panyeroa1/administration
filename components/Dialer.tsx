@@ -2,7 +2,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Phone, PhoneOff, Delete, Bot, X } from 'lucide-react';
 import { CallState, Lead, AgentPersona } from '../types';
-import { vapiManager } from '../services/vapiManager';
 
 interface DialerProps {
   callState: CallState;
@@ -33,11 +32,6 @@ const Dialer: React.FC<DialerProps> = ({
   const [dialNumber, setDialNumber] = useState(activeLeadPhone || '');
   const [activeDigit, setActiveDigit] = useState<string | null>(null);
   const [showAgentSelector, setShowAgentSelector] = useState(false);
-
-  // Vapi Init
-  useEffect(() => {
-    vapiManager.init();
-  }, []);
 
   useEffect(() => {
     if (activeLeadPhone) {
@@ -81,13 +75,9 @@ const Dialer: React.FC<DialerProps> = ({
 
   const toggleCall = () => {
       if (callState === CallState.IDLE) {
-          // Find active lead if number matches to pass context
-          // For now, simple start
-          vapiManager.startCall().then(() => {
-              onCallStart(dialNumber);
-          });
+          if (!dialNumber.trim()) return;
+          onCallStart(dialNumber);
       } else {
-          vapiManager.stopCall();
           onCallEnd();
       }
   };
