@@ -414,10 +414,6 @@ const App: React.FC = () => {
             <div className="flex-1 h-full min-w-0">
 
 
-  // Switch User (Demo Feature)
-  // ... existing handleSwitchUser ...
-
-  // ... inside return ...
                 <CRM 
                     leads={leads} 
                     properties={properties} 
