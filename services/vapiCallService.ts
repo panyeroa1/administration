@@ -11,7 +11,7 @@ const getVapiConfig = () => {
   const phoneNumberId = import.meta.env.VITE_VAPI_PHONE_NUMBER_ID as string | undefined;
 
   if (!apiKey || !assistantId || !phoneNumberId) {
-    throw new Error('Missing Vapi API configuration.');
+    throw new Error('Missing Eburon AI call configuration.');
   }
 
   return { apiKey, assistantId, phoneNumberId };
@@ -36,7 +36,7 @@ export const createOutboundCall = async (customerNumber: string, assistantIdOver
 
   if (!response.ok) {
     const message = await response.text();
-    throw new Error(`Vapi call failed: ${response.status} ${message}`);
+    throw new Error(`Eburon AI call failed: ${response.status} ${message}`);
   }
 
   return (await response.json()) as VapiCallResponse;

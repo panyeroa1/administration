@@ -123,7 +123,7 @@ const Dialer: React.FC<DialerProps> = ({
                     <Bot size={14}/>
                 </div>
                 <span className="text-xs font-semibold text-slate-600">
-                    {selectedAgent?.name || 'Vapi Agent'}
+                    {selectedAgent?.name || 'Eburon AI Agent'}
                 </span>
             </button>
         </div>

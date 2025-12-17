@@ -195,7 +195,7 @@ const App: React.FC = () => {
             setCurrentCallId(call.id);
         }
     } catch (error) {
-        console.error('Failed to start Vapi call:', error);
+        console.error('Failed to start Eburon AI call:', error);
         if (ringtoneRef.current) {
             ringtoneRef.current.pause();
             ringtoneRef.current = null;
