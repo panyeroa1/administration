@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import LeadForm from './LeadForm';
 import TicketForm from './TicketForm';
+import ListingForm from './ListingForm';
 // WebCall component removed - tab was deleted
 
 interface CRMProps {
@@ -184,6 +185,13 @@ const CRM: React.FC<CRMProps> = ({
           sharedWith: ['BROKER']
       });
       setShowDocumentForm(false);
+  };
+
+  const handleDocumentChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+      const { name, value } = e.target;
+      setNewDocument(prev => ({ ...prev, [name]: value }));
   };
 
 
@@ -990,16 +998,6 @@ const CRM: React.FC<CRMProps> = ({
                                     <h2 className="text-2xl font-bold text-slate-800">Leads</h2>
                                     <p className="text-slate-500 text-sm mt-1">Manage and track your potential clients</p>
                                 </div>
-// ... imports
-import LeadForm from './LeadForm';
-
-// ... inside CRM
-const [showLeadForm, setShowLeadForm] = useState(false);
-
-// ... handleAddTask modification (need to confirm where it is, assuming I can overwrite it or I'll do it in a separate block if I can't see it here)
-// I will just do the button here first.
-
-// ... Button
                                 <button 
                                     onClick={() => setShowLeadForm(true)}
                                     className="bg-black 600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-black 700 shadow-sm transition-colors flex items-center gap-2"
@@ -1008,21 +1006,10 @@ const [showLeadForm, setShowLeadForm] = useState(false);
                                     Add Lead
                                 </button>
                             </div>
-                            {/* Render LeadForm */}
                             {showLeadForm && (
                                 <LeadForm 
                                     onClose={() => setShowLeadForm(false)} 
-                                    onSuccess={() => {
-                                        setShowLeadForm(false);
-                                        // Ideally trigger reload of leads. CRM component takes leads as prop, doesn't own fetch.
-                                        // So we should prob reload entire page or if possible trigger a refetch prop.
-                                        // For now, user says "requires refresh" is bad. I should assume CRM is parent or I can force reload.
-                                        // Actually CRM.tsx is a component. `App.tsx` likely fetches data.
-                                        // If I can't refetch, window.location.reload() is a crude but effective fix for now, OR better: call an onLeadsChange prop if it existed.
-                                        // But looking at props: `onUpdateLead` exists. Maybe `loadData` is internal? 
-                                        // Outline said `CRM.loadData`. Let's check if I can call THAT.
-                                        window.location.reload(); // Safest immediate fix given I can't see parent easily.
-                                    }} 
+                                    onSuccess={() => setShowLeadForm(false)} 
                                 />
                             )}
                             <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
@@ -1163,6 +1150,126 @@ const [showLeadForm, setShowLeadForm] = useState(false);
                             <button onClick={handleSaveNote} className="mt-2 w-full bg-black 600 text-white py-2 rounded-lg text-sm font-bold shadow-sm hover:bg-black 700 transition-colors">Save Note</button>
                          </div>
                     </div>
+                </div>
+            )}
+
+            {showTicketForm && (
+                <TicketForm
+                  currentUser={currentUser}
+                  onClose={() => setShowTicketForm(false)}
+                  onSuccess={() => {
+                      refreshTickets();
+                      setShowTicketForm(false);
+                  }}
+                />
+            )}
+
+            {showListingForm && (
+                <ListingForm
+                  onClose={() => setShowListingForm(false)}
+                  onSuccess={() => setShowListingForm(false)}
+                />
+            )}
+
+            {showDocumentForm && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                  <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg">
+                    <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 rounded-t-xl">
+                      <div>
+                        <h2 className="text-xl font-bold text-gray-900">Upload Document</h2>
+                        <p className="text-sm text-gray-500">Add a document to the CRM</p>
+                      </div>
+                      <button
+                        onClick={() => setShowDocumentForm(false)}
+                        className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                        title="Close"
+                      >
+                        <X className="w-5 h-5 text-gray-500" />
+                      </button>
+                    </div>
+                    <form onSubmit={handleDocumentSubmit} className="p-6 space-y-4">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-700">Document Name</label>
+                        <input
+                          type="text"
+                          name="name"
+                          required
+                          className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-black/5"
+                          value={newDocument.name || ''}
+                          onChange={handleDocumentChange}
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-gray-700">Category</label>
+                          <select
+                            name="category"
+                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-black/5"
+                            value={newDocument.category}
+                            onChange={handleDocumentChange}
+                          >
+                            <option value="Contracts">Contracts</option>
+                            <option value="Invoices">Invoices</option>
+                            <option value="Reports">Reports</option>
+                            <option value="Plans">Plans</option>
+                          </select>
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-gray-700">Type</label>
+                          <select
+                            name="type"
+                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-black/5"
+                            value={newDocument.type}
+                            onChange={handleDocumentChange}
+                          >
+                            <option value="PDF">PDF</option>
+                            <option value="DOC">DOC</option>
+                            <option value="IMG">IMG</option>
+                            <option value="XLS">XLS</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-gray-700">Size</label>
+                          <input
+                            type="text"
+                            name="size"
+                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-black/5"
+                            placeholder="e.g. 2.4 MB"
+                            value={newDocument.size || ''}
+                            onChange={handleDocumentChange}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-gray-700">Date</label>
+                          <input
+                            type="date"
+                            name="date"
+                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-black/5"
+                            value={newDocument.date || ''}
+                            onChange={handleDocumentChange}
+                          />
+                        </div>
+                      </div>
+                      <div className="pt-4 border-t border-gray-100 flex justify-end gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setShowDocumentForm(false)}
+                          className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          className="px-6 py-2 text-sm font-medium text-white bg-black hover:bg-gray-800 rounded-lg transition-colors flex items-center gap-2"
+                        >
+                          <Save className="w-4 h-4" />
+                          Save Document
+                        </button>
+                      </div>
+                    </form>
+                  </div>
                 </div>
             )}
         </div>
