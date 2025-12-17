@@ -5,7 +5,7 @@ export const LAURENT_AGENT_CONFIG = {
   "name": "Property Manager",
   "voice": {
     "voiceId": "Elliot",
-    "provider": "vapi"
+    "provider": "eburon"
   },
   "model": {
     "model": "gpt-5.2",

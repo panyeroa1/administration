@@ -9,9 +9,9 @@ type PromptInput = {
 };
 
 export const generateAgentSystemPrompt = async (input: PromptInput) => {
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  const apiKey = import.meta.env.VITE_EBURON_AI_API_KEY;
   if (!apiKey) {
-    throw new Error('Missing VITE_GEMINI_API_KEY');
+    throw new Error('Missing VITE_EBURON_AI_API_KEY');
   }
 
   const ai = new GoogleGenAI({ apiKey });

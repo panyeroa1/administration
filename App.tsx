@@ -5,12 +5,12 @@ import CRM from './components/CRM';
 import Auth from './components/Auth';
 import LandingPage from './components/LandingPage';
 import { Lead, CallState, Recording, User, Property, AgentPersona, Task } from './types';
-import { geminiClient } from './services/geminiService';
-// vapiService removed - Dialer now embeds app.eburon.ai directly
+import { eburonAiClient } from './services/eburonAiService';
+// Eburon service - Dialer now embeds app.eburon.ai directly
 import { Download, Save, Trash2, X, AlertCircle, Loader2, Phone, LayoutDashboard, User as UserIcon, Settings } from 'lucide-react';
 import { db } from './services/db';
 import { supabase, isConfigured } from './supabaseClient';
-import { createOutboundCall } from './services/vapiCallService';
+import { createOutboundCall } from './services/eburonCallService';
 
 interface PendingRec {
   url: string;
@@ -73,7 +73,7 @@ const App: React.FC = () => {
   const ringtoneRef = useRef<HTMLAudioElement | null>(null);
   const ringTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
-  // Vapi Monitoring Socket (if applicable, currently placeholder)
+  // Eburon Monitoring Socket (if applicable, currently placeholder)
   const [monitorWs, setMonitorWs] = useState<WebSocket | null>(null);
   const [showAuth, setShowAuth] = useState(false);
 
@@ -101,18 +101,18 @@ const App: React.FC = () => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handleResize);
     
-    // Gemini Volume (for Agent Config / Demo mode if used)
-    geminiClient.onVolumeChange = (inp, outp) => {
+    // Eburon AI Volume (for Agent Config / Demo mode if used)
+    eburonAiClient.onVolumeChange = (inp, outp) => {
         setAudioVols({ in: inp, out: outp });
     };
 
-    geminiClient.onClose = () => {
+    eburonAiClient.onClose = () => {
         handleEndCall();
     };
 
     return () => {
         window.removeEventListener('resize', handleResize);
-        geminiClient.disconnect();
+        eburonAiClient.disconnect();
         if(monitorWs) monitorWs.close();
     };
   }, []);
@@ -195,7 +195,7 @@ const App: React.FC = () => {
             setCurrentCallId(call.id);
         }
     } catch (error) {
-        console.error('Failed to start Vapi call:', error);
+        console.error('Failed to start Eburon call:', error);
         if (ringtoneRef.current) {
             ringtoneRef.current.pause();
             ringtoneRef.current = null;
@@ -267,8 +267,8 @@ const App: React.FC = () => {
         await stopRecordingAndPrompt();
     }
     
-    // If using Gemini client for other features, disconnect it too
-    geminiClient.disconnect();
+    // If using Eburon AI client for other features, disconnect it too
+    eburonAiClient.disconnect();
     
     setCallState(CallState.ENDED);
     setTimeout(() => setCallState(CallState.IDLE), 2000);

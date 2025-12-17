@@ -21,7 +21,7 @@ export function encode(bytes: Uint8Array): string {
   return btoa(binary);
 }
 
-// Create Blob for Gemini Input (Float32 to Int16 PCM)
+// Create Blob for Eburon AI Input (Float32 to Int16 PCM)
 export function createPcmBlob(data: Float32Array): Blob {
   const l = data.length;
   const int16 = new Int16Array(l);

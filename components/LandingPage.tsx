@@ -4,7 +4,7 @@ import { Phone } from 'lucide-react';
 import ListingCard from './ListingCard';
 import ListingDetails from './ListingDetails';
 import { db } from '../services/db';
-import { geminiClient } from '../services/geminiService';
+import { eburonAiClient } from '../services/eburonAiService';
 import { ApartmentSearchFilters, Listing, User } from '../types';
 import { Type } from '@google/genai';
 import { buildListingSlug, listingMatchesSlug } from '../utils/listingSlug';
@@ -125,13 +125,13 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, currentUser }) 
     loadListings(filters);
   }, []);
 
-  // Hook up Gemini Client
+  // Hook up Eburon AI Client
   useEffect(() => {
-    geminiClient.onVolumeChange = (inp) => {
+    eburonAiClient.onVolumeChange = (inp) => {
         setVolume(prev => prev * 0.8 + inp * 0.2);
     };
 
-    geminiClient.onClose = () => {
+    eburonAiClient.onClose = () => {
         if (ringTimeoutRef.current) {
             window.clearTimeout(ringTimeoutRef.current);
             ringTimeoutRef.current = null;
@@ -147,7 +147,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, currentUser }) 
         setVolume(0);
     };
 
-    geminiClient.onToolCall = async (toolCalls) => {
+    eburonAiClient.onToolCall = async (toolCalls) => {
         const responses = [];
         for (const fc of toolCalls) {
             if (fc.name === 'listProperties') {
@@ -211,7 +211,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, currentUser }) 
             ringAudioRef.current.currentTime = 0;
             ringAudioRef.current = null;
         }
-        geminiClient.disconnect();
+        eburonAiClient.disconnect();
     };
   }, []);
 
@@ -287,7 +287,7 @@ Focus on clear, concise communication, avoiding unnecessary technical terms unle
 Politely ask clarifying questions when necessary, and reassure the client if technical issues arise. Use phrases like "Let's look for other options" or "I'll ensure we find something that meets your needs" to maintain client confidence even if standard solutions aren't available.
           `;
 
-          await geminiClient.connect(systemPrompt, [listPropertiesTool, findOffListPropertiesTool, scheduleViewingTool, saveLeadTool]);
+          await eburonAiClient.connect(systemPrompt, [listPropertiesTool, findOffListPropertiesTool, scheduleViewingTool, saveLeadTool]);
       } catch (e) {
           console.error(e);
           setIsLiveActive(false);
@@ -321,7 +321,7 @@ Politely ask clarifying questions when necessary, and reassure the client if tec
       }
 
       if (isLiveActive) {
-          geminiClient.disconnect();
+          eburonAiClient.disconnect();
           setIsLiveActive(false);
           setAssistantReply('Tap to call +1 (844) 484 9501');
           return;

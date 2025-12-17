@@ -3,7 +3,7 @@ import { db } from './db';
 import { LAURENT_AGENT_CONFIG } from './laurentConfig';
 import { Lead, Task } from '../types';
 
-const vapi = new Vapi((import.meta as any).env.VITE_VAPI_PUBLIC_KEY || '');
+const eburonClient = new Vapi((import.meta as any).env.VITE_EBURON_PUBLIC_KEY || '');
 
 // Tool call handlers
 const toolHandlers: Record<string, (args: any) => Promise<any>> = {
@@ -86,8 +86,8 @@ const toolHandlers: Record<string, (args: any) => Promise<any>> = {
   }
 };
 
-export const vapiManager = {
-  vapi,
+export const eburonManager = {
+  client: eburonClient,
 
   // Track active context
   currentLeadId: null as string | null,
@@ -101,36 +101,36 @@ export const vapiManager = {
     } : {};
     
     if (lead) {
-        vapiManager.currentLeadId = lead.id;
+        eburonManager.currentLeadId = lead.id;
     } else {
-        vapiManager.currentLeadId = null;
+        eburonManager.currentLeadId = null;
     }
 
     // We start the call with the FULL config to ensure prompts are respected
-    return vapi.start(LAURENT_AGENT_CONFIG as any, assistantOverrides);
+    return eburonClient.start(LAURENT_AGENT_CONFIG as any, assistantOverrides);
   },
 
   stopCall: () => {
-     vapi.stop();
-     vapiManager.currentLeadId = null;
+     eburonClient.stop();
+     eburonManager.currentLeadId = null;
   },
 
   toggleMute: (mute: boolean) => {
-      vapi.setMuted(mute);
+      eburonClient.setMuted(mute);
   },
 
   // Event Listeners Initialization
   init: () => {
       // Remove existing listeners to avoid duplicates if init called multiple times
-      vapi.removeAllListeners();
+      eburonClient.removeAllListeners();
 
-      vapi.on('call-end', () => {
+      eburonClient.on('call-end', () => {
           console.log('Call Ended. Waiting for report...');
-          vapiManager.currentLeadId = null;
+          eburonManager.currentLeadId = null;
       });
       
-      vapi.on('message', async (message: any) => {
-          console.log('Vapi Message:', message);
+      eburonClient.on('message', async (message: any) => {
+          console.log('Eburon Message:', message);
           
           // Handle tool calls from the assistant
           if (message.type === 'tool-call') {
@@ -140,15 +140,15 @@ export const vapiManager = {
               if (handler) {
                   try {
                       const result = await handler(args);
-                      // Send tool result back to Vapi
-                      (vapi as any).send({
+                      // Send tool result back to Eburon
+                      (eburonClient as any).send({
                           type: 'tool-call-result',
                           toolCallId: message.toolCallId,
                           result: JSON.stringify(result)
                       });
                   } catch (error) {
                       console.error(`Tool ${name} error:`, error);
-                      (vapi as any).send({
+                      (eburonClient as any).send({
                           type: 'tool-call-result',
                           toolCallId: message.toolCallId,
                           result: JSON.stringify({ error: 'Tool execution failed' })
@@ -170,24 +170,24 @@ export const vapiManager = {
                       const interaction = {
                           type: 'VOICE_CALL',
                           direction: 'OUTBOUND',
-                          leadId: vapiManager.currentLeadId || undefined, 
+                          leadId: eburonManager.currentLeadId || undefined, 
                           content: summary,
                           metadata: {
                               transcript: transcript,
-                              vapiCallId: message.call?.id,
+                              eburonCallId: message.call?.id,
                               structuredData: structuredData
                           },
                           timestamp: new Date().toISOString()
                       };
 
                       await db.createInteraction(interaction);
-                      if (vapiManager.currentLeadId) {
+                      if (eburonManager.currentLeadId) {
                           const noteTimestamp = new Date().toLocaleString();
                           const structuredText = structuredData
                               ? JSON.stringify(structuredData, null, 2)
                               : 'No structured output.';
                           const note = `[${noteTimestamp}] Call Summary\n${summary}\n\nStructured Output\n${structuredText}`;
-                          await db.appendLeadNotes(vapiManager.currentLeadId, note, 'Call summary saved');
+                          await db.appendLeadNotes(eburonManager.currentLeadId, note, 'Call summary saved');
                       }
                       
                       console.log('Call interaction saved from report.');
@@ -198,8 +198,8 @@ export const vapiManager = {
           }
       });
       
-      vapi.on('error', (e) => {
-          console.error('Vapi Error:', e);
+      eburonClient.on('error', (e) => {
+          console.error('Eburon Error:', e);
       });
   }
 };
